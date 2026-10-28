@@ -15,3 +15,4 @@ footer{background:#0b1f3a;color:#94a3b8;padding:28px 0;margin-top:60px;font-size
 @media(max-width:700px){.menu{display:block}nav{display:none;position:absolute;top:64px;left:0;right:0;background:#0b1f3a;padding:10px 20px}.open nav{display:block}nav a{display:block;margin:10px 0}}
 
 .stars{color:#f5b301;font-size:20px;letter-spacing:2px;margin:0 0 8px}.reviews{margin-top:40px}.reviews .card p{margin:0 0 10px}.btn.ghost-dark{background:transparent;color:#0b1f3a;border:2px solid #0b1f3a}
+.plans{margin-top:40px}.plan .price{font-size:34px;font-weight:800;color:#0b1f3a;margin:4px 0 10px}.plan .price span{font-size:16px;font-weight:600}
