@@ -13,3 +13,5 @@ section.wrap{padding-top:48px;padding-bottom:16px}.grid3{display:grid;grid-templ
 label{display:block;font-weight:600;margin:12px 0}input,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;margin-top:4px}.note{font-size:14px;color:#64748b}
 footer{background:#0b1f3a;color:#94a3b8;padding:28px 0;margin-top:60px;font-size:14px}footer a{color:#22d3ee}
 @media(max-width:700px){.menu{display:block}nav{display:none;position:absolute;top:64px;left:0;right:0;background:#0b1f3a;padding:10px 20px}.open nav{display:block}nav a{display:block;margin:10px 0}}
+
+.stars{color:#f5b301;font-size:20px;letter-spacing:2px;margin:0 0 8px}.reviews{margin-top:40px}.reviews .card p{margin:0 0 10px}.btn.ghost-dark{background:transparent;color:#0b1f3a;border:2px solid #0b1f3a}
