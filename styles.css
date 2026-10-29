@@ -17,3 +17,4 @@ footer{background:#0b1f3a;color:#94a3b8;padding:28px 0;margin-top:60px;font-size
 .stars{color:#f5b301;font-size:20px;letter-spacing:2px;margin:0 0 8px}.reviews{margin-top:40px}.reviews .card p{margin:0 0 10px}.btn.ghost-dark{background:transparent;color:#0b1f3a;border:2px solid #0b1f3a}
 .plans{margin-top:40px}.plan .price{font-size:34px;font-weight:800;color:#0b1f3a;margin:4px 0 10px}.plan .price span{font-size:16px;font-weight:600}
 .logo img{display:block;height:48px;width:auto}
+.internship{margin-top:40px}.internship form label{display:block;margin:10px 0;font-weight:600}.internship form input{display:block;width:100%;padding:10px;margin-top:4px;border:1px solid #cbd5e1;border-radius:8px;font-size:16px;box-sizing:border-box}
