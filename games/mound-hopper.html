@@ -98,6 +98,5 @@ function draw(){x.setTransform(dpr*S,0,0,dpr*S,0,0);sky();if(st!=='start'&&obs)o
  if(st==='crash')txt(score,70,48);}
 let last=performance.now();p={x:Math.min(W*0.3,160),y:H*0.42,v:0,r:0};
 function loop(n){let dt=(n-last)/1000;last=n;if(dt>0.05)dt=0.05;if(dt>0)upd(dt);draw();requestAnimationFrame(loop);}requestAnimationFrame(loop);showName();
-window.__mh={get st(){return st},get spd(){return spd},setScore(v){score=v},get cr(){return cr},get score(){return score},get p(){return p},get obs(){return obs},GAP};
 })();
 </script></body></html>
