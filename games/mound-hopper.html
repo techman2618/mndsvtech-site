@@ -3,22 +3,42 @@
 <link rel="canonical" href="https://www.mndsvtech.com/games/mound-hopper.html"><link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <style>html,body{margin:0;height:100%;overflow:hidden;background:#0f1a30;overscroll-behavior:none;touch-action:none;-webkit-user-select:none;user-select:none;font-family:system-ui,sans-serif}
 #c{display:block;width:100vw;height:100vh;height:100dvh;touch-action:none}
-#back{position:fixed;top:max(8px,env(safe-area-inset-top));left:8px;z-index:2;background:#1d2b4acc;color:#fff;text-decoration:none;padding:8px 12px;border-radius:8px;font-size:14px}</style></head><body>
-<a id="back" href="../games.html">← Games</a><canvas id="c" aria-label="Mound Hopper game. Tap, click or press space to flap."></canvas>
+#back{position:fixed;top:max(8px,env(safe-area-inset-top));left:8px;z-index:2;background:#1d2b4acc;color:#fff;text-decoration:none;padding:8px 12px;border-radius:8px;font-size:14px}#ov{position:fixed;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;background:#0f1a3099;padding:16px;box-sizing:border-box;touch-action:auto}
+#ov.hide{display:none}.bx{background:#1d2b4a;color:#fff;border-radius:16px;padding:20px;width:100%;max-width:360px;max-height:92dvh;overflow:auto;text-align:center;box-shadow:0 8px 30px #0008}
+.bx h2{margin:.1em 0 .3em;color:#3ee0f0;font-size:28px}.bx input{font-size:18px;padding:10px;border-radius:8px;border:2px solid #3ee0f0;width:100%;box-sizing:border-box;text-align:center}
+.bx button{margin-top:12px;font-size:18px;font-weight:800;padding:12px 20px;border:0;border-radius:10px;background:#3ee0f0;color:#0f1a30;width:100%}
+.bx table{width:100%;border-collapse:collapse;margin:8px 0;font-size:15px}.bx td,.bx th{padding:4px 6px;border-bottom:1px solid #ffffff22}.bx td:last-child,.bx th:last-child{text-align:right}.bx td:nth-child(2),.bx th:nth-child(2){text-align:left}
+.bx tr.me{background:#ffd54a;color:#0f1a30;font-weight:800}.big{font-size:22px;font-weight:800;margin:4px 0}.sm{font-size:13px;opacity:.8;margin:6px 0}</style></head><body>
+<a id="back" href="../games.html">← Games</a><div id="ov" class="hide"><div class="bx" id="bx"></div></div><canvas id="c" aria-label="Mound Hopper game. Tap, click or press space to flap."></canvas>
 <script>
 (()=>{const cv=document.getElementById('c'),x=cv.getContext('2d');let W=0,H=0,S=1,dpr=1;
 const VH=640;// virtual height; width varies with aspect
 function rs(){dpr=Math.min(window.devicePixelRatio||1,3);const w=innerWidth,h=innerHeight;cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);S=h/VH;W=w/S;H=VH;}
 addEventListener('resize',rs);rs();
 const G=1500,FLAP=-460,SPD=190,GAP=175,SPACE=260,GROUND=70,PR=17;
+const ov=document.getElementById('ov'),bx=document.getElementById('bx');
+function clean(n){return String(n||'').replace(/[\u0000-\u001f<>&"'`]/g,'').replace(/\s+/g,' ').trim().slice(0,12)}
+let pname=clean(localStorage.getItem('moundHopperName')||'');
+function getScores(){try{const a=JSON.parse(localStorage.getItem('moundHopperScores')||'[]');return Array.isArray(a)?a.filter(e=>e&&typeof e.s==='number').map(e=>({n:clean(e.n)||'Player',s:e.s|0,t:+e.t||0})):[]}catch(e){return[]}}
+function el(tag,txt,cls){const e=document.createElement(tag);if(txt!=null)e.textContent=txt;if(cls)e.className=cls;return e}
+function nameField(){const i=el('input');i.maxLength=12;i.value=pname;i.placeholder='Your name';i.autocomplete='nickname';i.setAttribute('enterkeyhint','go');i.id='nm';return i}
+function showName(){st='name';bx.replaceChildren(el('h2','Mound Hopper'),el('p','Enter your name for the high score list','sm'));const i=nameField(),b=el('button','Start');bx.append(i,b);ov.classList.remove('hide');
+ const go=()=>{const n=clean(i.value);if(!n){i.focus();return}pname=n;try{localStorage.setItem('moundHopperName',n)}catch(e){}i.blur();ov.classList.add('hide');st='start';};b.onclick=go;i.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')go()};}
+function showOver(){const sc=getScores();const e={n:pname||'Player',s:score,t:Date.now()};sc.push(e);sc.sort((a,b)=>b.s-a.s||a.t-b.t);const top=sc.slice(0,50);try{localStorage.setItem('moundHopperScores',JSON.stringify(top))}catch(_){}
+ bx.replaceChildren(el('h2','Game Over'),el('p','Score: '+score+'  ·  Best: '+best,'big'));const tb=el('table'),hr=el('tr');['#','Name','Score'].forEach(h=>hr.append(el('th',h)));tb.append(hr);
+ top.slice(0,10).forEach((x,k)=>{const tr=el('tr');if(x===e)tr.className='me';tr.append(el('td',k+1),el('td',x.n),el('td',x.s));tb.append(tr)});
+ const rank=top.indexOf(e);bx.append(el('p','Top 10 high scores (this device)','sm'),tb);if(rank>9||rank<0)bx.append(el('p','You placed #'+(rank<0?'50+':rank+1),'sm'));
+ const i=nameField(),b=el('button','Play again');bx.append(el('p','Player name','sm'),i,b);ov.classList.remove('hide');
+ const go=()=>{const n=clean(i.value);if(n){pname=n;try{localStorage.setItem('moundHopperName',n)}catch(_){}}i.blur();ov.classList.add('hide');reset();st='play';p.v=FLAP;};b.onclick=go;i.onkeydown=k=>{k.stopPropagation();if(k.key==='Enter')go()};}
+let cr=null,rest=0;
 let st='start',p,obs,score,best=+(localStorage.getItem('moundHopperBest')||0),t=0,dead=0,gx=0;
-function reset(){p={x:Math.min(W*0.3,160),y:H*0.42,v:0,r:0};obs=[];score=0;gx=0;for(let i=0;i<4;i++)add(W+120+i*SPACE,i);}
+function reset(){cr=null;rest=0;p={x:Math.min(W*0.3,160),y:H*0.42,v:0,r:0};obs=[];score=0;gx=0;for(let i=0;i<4;i++)add(W+120+i*SPACE,i);}
 function add(ox,i){const k=(obs.length?obs[obs.length-1].k+1:i)%2;const lo=110,hi=H-GROUND-GAP-60;const gy=lo+Math.random()*(hi-lo);obs.push({x:ox,gy,k,w:k?110:96,done:0});}
 function flap(e){if(e){e.preventDefault();}
- if(st==='start'){reset();st='play';p.v=FLAP;}else if(st==='play'){p.v=FLAP;}else if(st==='over'&&t-dead>0.6){reset();st='play';p.v=FLAP;}}
+ if(st==='name')return;if(st==='start'){reset();st='play';p.v=FLAP;}else if(st==='play'){p.v=FLAP;}}
 cv.addEventListener('pointerdown',flap,{passive:false});
-addEventListener('keydown',e=>{if(e.code==='Space'||e.code==='ArrowUp'||e.code==='Enter')flap(e);});
-document.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+addEventListener('keydown',e=>{if(e.target&&e.target.tagName==='INPUT')return;if(e.code==='Space'||e.code==='ArrowUp'||e.code==='Enter')flap(e);});
+document.addEventListener('touchmove',e=>{if(!e.target.closest||!e.target.closest('#ov'))e.preventDefault()},{passive:false});
 document.addEventListener('gesturestart',e=>e.preventDefault());
 // collision: bottom obstacle occupies y>gy+GAP, top occupies y<gy, within x..x+w (shapes approximated with inset rects)
 function hit(o){const px=p.x,py=p.y,r=PR-3;if(px+r<o.x+8||px-r>o.x+o.w-8)return false;
@@ -26,14 +46,18 @@ function hit(o){const px=p.x,py=p.y,r=PR-3;if(px+r<o.x+8||px-r>o.x+o.w-8)return 
  const by=o.gy+GAP;if(o.k===0){// mound: dome, sample curve
   const cx=o.x+o.w/2,hw=o.w/2+30;const dx=Math.abs(px-cx)/hw;const top=by+ (H-GROUND-by)*Math.max(0,dx*dx*0.9-0.05);return py+r>top;}
  return py+r>by;}
-function upd(dt){t+=dt;if(st==='start'){p&&(p.y=H*0.42+Math.sin(t*3)*10);gx=(gx+SPD*dt*0.5)%40;return}
- if(st==='over'){if(p.y<H-GROUND-PR){p.v+=G*dt;p.y=Math.min(H-GROUND-PR,p.y+p.v*dt);}return}
+function upd(dt){t+=dt;if(st==='start'||st==='name'){p&&(p.y=H*0.42+Math.sin(t*3)*10);gx=(gx+SPD*dt*0.5)%40;return}
+ if(st==='crash'||st==='over'){const fl=H-GROUND-13;if(p.y<fl){p.v=Math.min(p.v+G*dt,900);p.y+=p.v*dt;p.x+=cr.vx*dt;p.r+=cr.spin*dt;if(p.y>=fl){p.y=fl;p.v=0;cr.vx=0;p.r=Math.PI/2*Math.round(p.r/(Math.PI/2));if(Math.round(p.r/(Math.PI/2))%2===0)p.r+=Math.PI/2;rest=t;}}
+  cr.sh.forEach(q=>{if(q.y<H-GROUND-2){q.vy+=G*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;q.a+=q.va*dt}else q.y=H-GROUND-2});
+  if(st==='crash'&&rest&&t-rest>0.7){st='over';showOver();}return}
  p.v=Math.min(p.v+G*dt,700);p.y+=p.v*dt;p.r=Math.max(-0.45,Math.min(1.1,p.v/600));gx=(gx+SPD*dt)%40;
  for(const o of obs){o.x-=SPD*dt;if(!o.done&&o.x+o.w<p.x){o.done=1;score++;}}
  if(obs[0].x+obs[0].w<-60){obs.shift();add(obs[obs.length-1].x+SPACE);}
  if(p.y<-40)p.y=-40;
  if(p.y+PR>H-GROUND||obs.some(hit))die();}
-function die(){st='over';dead=t;if(score>best){best=score;try{localStorage.setItem('moundHopperBest',best)}catch(e){}}}
+function die(){st='crash';dead=t;const ix=(Math.random()-.5)*14,iy=(Math.random()-.5)*20,cl=[];for(let i=0;i<9;i++){const a=i/9*Math.PI*2+Math.random()*.5;let px=ix,py=iy;const seg=[[px,py]];for(let j=0;j<3;j++){px+=Math.cos(a+(Math.random()-.5)*.7)*7;py+=Math.sin(a+(Math.random()-.5)*.7)*9;seg.push([px,py])}cl.push(seg)}
+ const sh=[];for(let i=0;i<8;i++)sh.push({x:p.x,y:p.y,vx:(Math.random()-.5)*260,vy:-150-Math.random()*250,a:0,va:(Math.random()-.5)*20,z:3+Math.random()*4});
+ cr={ix,iy,cl,sh,vx:-60,spin:7+Math.random()*3};p.v=Math.min(p.v,-250);if(score>best){best=score;try{localStorage.setItem('moundHopperBest',best)}catch(e){}}}
 // drawing
 function sky(){const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#4fb8ee');g.addColorStop(1,'#c9ecfb');x.fillStyle=g;x.fillRect(0,0,W,H);
  x.fillStyle='#fff8';for(let i=0;i<5;i++){const cx=((i*220-t*15)%(W+300)+W+300)%(W+300)-150,cy=60+i*37%120;x.beginPath();x.arc(cx,cy,22,0,7);x.arc(cx+24,cy-8,26,0,7);x.arc(cx+50,cy,20,0,7);x.fill();}
@@ -57,17 +81,19 @@ function drawObs(o){// top element always a hanging watchtower; bottom: mound (k
 function phone(){x.save();x.translate(p.x,p.y);x.rotate(p.r);const w=26,h=42;
  x.fillStyle='#1d2b4a';rr(-w/2,-h/2,w,h,6);x.fillStyle='#3ee0f0';rr(-w/2+3,-h/2+5,w-6,h-12,3);
  x.fillStyle='#fff';x.beginPath();x.arc(-5,-6,4,0,7);x.arc(5,-6,4,0,7);x.fill();x.fillStyle='#000';x.beginPath();x.arc(-4,-5,2,0,7);x.arc(6,-5,2,0,7);x.fill();
- x.strokeStyle='#1d2b4a';x.lineWidth=2;x.beginPath();st==='over'?x.arc(0,8,5,Math.PI*1.1,Math.PI*1.9):x.arc(0,3,5,0.2,Math.PI-0.2);x.stroke();
- const fl=Math.sin(t*25)*6*(p.v<0?1:0.3);x.fillStyle='#fff';x.beginPath();x.ellipse(-w/2-6,-2+fl,9,4,-0.5,0,7);x.ellipse(w/2+6,-2+fl,9,4,0.5,0,7);x.fill();x.restore();}
+if(cr){x.save();x.beginPath();x.rect(-w/2+3,-h/2+5,w-6,h-12);x.clip();x.fillStyle='#ffffff22';x.fillRect(-w/2,-h/2,w,h);x.strokeStyle='#fff';x.lineWidth=1.2;cr.cl.forEach(sg=>{x.beginPath();x.moveTo(sg[0][0],sg[0][1]);sg.forEach(q=>x.lineTo(q[0],q[1]));x.stroke()});x.beginPath();x.arc(cr.ix,cr.iy,4,0,7);x.stroke();x.restore();
+  x.strokeStyle='#000';x.lineWidth=1.6;[-5,5].forEach(ex=>{x.beginPath();x.moveTo(ex-3,-9);x.lineTo(ex+3,-3);x.moveTo(ex+3,-9);x.lineTo(ex-3,-3);x.stroke()})}
+ x.strokeStyle='#1d2b4a';x.lineWidth=2;x.beginPath();cr?x.arc(0,8,5,Math.PI*1.1,Math.PI*1.9):x.arc(0,3,5,0.2,Math.PI-0.2);x.stroke();
+ const fl=cr?4:Math.sin(t*25)*6*(p.v<0?1:0.3);x.globalAlpha=cr?.6:1;x.fillStyle='#fff';x.beginPath();x.ellipse(-w/2-6,-2+fl,9,4,-0.5,0,7);x.ellipse(w/2+6,-2+fl,9,4,0.5,0,7);x.fill();x.globalAlpha=1;x.restore();if(cr){x.fillStyle='#bff6fc';cr.sh.forEach(q=>{x.save();x.translate(q.x,q.y);x.rotate(q.a);x.beginPath();x.moveTo(0,-q.z);x.lineTo(q.z,q.z);x.lineTo(-q.z*.6,q.z*.4);x.fill();x.restore()})}}
 function rr(a,b,w,h,r){x.beginPath();x.roundRect?x.roundRect(a,b,w,h,r):x.rect(a,b,w,h);x.fill();}
 function txt(s,y,sz,c='#fff'){x.font=`800 ${sz}px system-ui,sans-serif`;x.textAlign='center';x.lineWidth=sz/6;x.strokeStyle='#1d2b4a';x.strokeText(s,W/2,y);x.fillStyle=c;x.fillText(s,W/2,y);}
 function panel(y,h){x.fillStyle='#1d2b4add';const w=Math.min(W-30,340);x.beginPath();x.roundRect?x.roundRect(W/2-w/2,y,w,h,16):x.rect(W/2-w/2,y,w,h);x.fill();}
-function draw(){x.setTransform(dpr*S,0,0,dpr*S,0,0);sky();if(st!=='start')obs.forEach(drawObs);ground();if(p)phone();
+function draw(){x.setTransform(dpr*S,0,0,dpr*S,0,0);sky();if(st!=='start'&&obs)obs.forEach(drawObs);ground();if(p)phone();
  if(st==='play')txt(score,70,48);
- if(st==='start'){panel(H*0.12,150);txt('Mound Hopper',H*0.12+50,36,'#3ee0f0');txt('Fly over Moundsville!',H*0.12+88,18);txt('Best: '+best,H*0.12+122,18);txt('Tap, click or press Space',H*0.66,20);txt('to start',H*0.66+28,20);}
- if(st==='over'){panel(H*0.2,190);txt('Game Over',H*0.2+50,38,'#ff6b6b');txt('Score: '+score,H*0.2+95,24);txt('Best: '+best,H*0.2+128,24);if(t-dead>0.6)txt('Tap to play again',H*0.2+168,18,'#3ee0f0');}}
+ if(st==='start'){panel(H*0.12,150);txt('Mound Hopper',H*0.12+50,36,'#3ee0f0');txt('Fly over Moundsville!',H*0.12+88,18);txt(pname?'Player: '+pname+' · Best: '+best:'Best: '+best,H*0.12+122,18);txt('Tap, click or press Space',H*0.66,20);txt('to start',H*0.66+28,20);}
+ if(st==='crash')txt(score,70,48);}
 let last=performance.now();p={x:Math.min(W*0.3,160),y:H*0.42,v:0,r:0};
-function loop(n){let dt=(n-last)/1000;last=n;if(dt>0.05)dt=0.05;if(dt>0)upd(dt);draw();requestAnimationFrame(loop);}requestAnimationFrame(loop);
-window.__mh={get st(){return st},get score(){return score},get p(){return p},get obs(){return obs},GAP};
+function loop(n){let dt=(n-last)/1000;last=n;if(dt>0.05)dt=0.05;if(dt>0)upd(dt);draw();requestAnimationFrame(loop);}requestAnimationFrame(loop);if(!pname)showName();
+window.__mh={get st(){return st},get cr(){return cr},get score(){return score},get p(){return p},get obs(){return obs},GAP};
 })();
 </script></body></html>
