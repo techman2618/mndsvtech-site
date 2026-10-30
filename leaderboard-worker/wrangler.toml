@@ -1,0 +1,11 @@
+name = "mound-hopper-scores"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mound-hopper"
+database_id = "REPLACE_AFTER_d1_create"
+
+[vars]
+ALLOWED_ORIGINS = "https://www.mndsvtech.com,https://mndsvtech.com,http://localhost:8765"
