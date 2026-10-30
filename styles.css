@@ -18,3 +18,6 @@ footer{background:#0b1f3a;color:#94a3b8;padding:28px 0;margin-top:60px;font-size
 .plans{margin-top:40px}.plan .price{font-size:34px;font-weight:800;color:#0b1f3a;margin:4px 0 10px}.plan .price span{font-size:16px;font-weight:600}
 .logo img{display:block;height:48px;width:auto}
 .internship{margin-top:40px}.internship form label{display:block;margin:10px 0;font-weight:600}.internship form input{display:block;width:100%;padding:10px;margin-top:4px;border:1px solid #cbd5e1;border-radius:8px;font-size:16px;box-sizing:border-box}
+.bigbtns{display:flex;gap:20px;margin:0 0 36px}.bigbtn{flex:1;text-align:center;background:#22d3ee;color:#0b1f3a;font-weight:900;font-size:clamp(32px,6vw,60px);letter-spacing:.08em;padding:28px 16px;border-radius:16px;text-decoration:none;box-shadow:0 8px 24px rgba(0,0,0,.25)}.bigbtn+.bigbtn{background:#fff}.bigbtn:hover{filter:brightness(1.08)}
+@media(max-width:560px){.bigbtns{flex-direction:column;gap:14px}.bigbtn{padding:22px 12px}}
+.svc img{width:100%;height:auto;border-radius:12px;display:block;margin-bottom:16px}
