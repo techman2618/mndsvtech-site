@@ -34,9 +34,9 @@ function showOver(){const sc=getScores();const e={n:pname||'Player',s:score,t:Da
 const API=document.querySelector('meta[name=mh-api]')?.content||'';let runId=null;
 function startRun(){runId=null;if(!API)return;fetch(API+'/start',{method:'POST'}).then(r=>r.json()).then(d=>{runId=d.run||null}).catch(()=>{})}
 function table(rows,isMe){const tb=el('table'),hr=el('tr');['#','Name','Score'].forEach(h=>hr.append(el('th',h)));tb.append(hr);rows.slice(0,10).forEach((x,k)=>{const tr=el('tr');if(isMe(x))tr.className='me';tr.append(el('td',k+1),el('td',x.n),el('td',x.s));tb.append(tr)});return tb}
-let cr=null,rest=0;
+let cr=null,rest=0,spd=190,lvl=0,flashT=-9;
 let st='start',p,obs,score,best=+(localStorage.getItem('moundHopperBest')||0),t=0,dead=0,gx=0;
-function reset(){cr=null;rest=0;p={x:Math.min(W*0.3,160),y:H*0.42,v:0,r:0};obs=[];score=0;gx=0;for(let i=0;i<4;i++)add(W+120+i*SPACE,i);}
+function reset(){spd=SPD;lvl=0;flashT=-9;cr=null;rest=0;p={x:Math.min(W*0.3,160),y:H*0.42,v:0,r:0};obs=[];score=0;gx=0;for(let i=0;i<4;i++)add(W+120+i*SPACE,i);}
 function add(ox,i){const k=(obs.length?obs[obs.length-1].k+1:i)%2;const lo=110,hi=H-GROUND-GAP-60;const gy=lo+Math.random()*(hi-lo);obs.push({x:ox,gy,k,w:k?110:96,done:0});}
 function flap(e){if(e){e.preventDefault();}
  if(st==='name')return;if(st==='start'){reset();st='play';p.v=FLAP;startRun();}else if(st==='play'){p.v=FLAP;}}
@@ -54,8 +54,8 @@ function upd(dt){t+=dt;if(st==='start'||st==='name'){p&&(p.y=H*0.42+Math.sin(t*3
  if(st==='crash'||st==='over'){const fl=H-GROUND-13;if(p.y<fl){p.v=Math.min(p.v+G*dt,900);p.y+=p.v*dt;p.x+=cr.vx*dt;p.r+=cr.spin*dt;if(p.y>=fl){p.y=fl;p.v=0;cr.vx=0;p.r=Math.PI/2*Math.round(p.r/(Math.PI/2));if(Math.round(p.r/(Math.PI/2))%2===0)p.r+=Math.PI/2;rest=t;}}
   cr.sh.forEach(q=>{if(q.y<H-GROUND-2){q.vy+=G*dt;q.x+=q.vx*dt;q.y+=q.vy*dt;q.a+=q.va*dt}else q.y=H-GROUND-2});
   if(st==='crash'&&rest&&t-rest>0.7){st='over';showOver();}return}
- p.v=Math.min(p.v+G*dt,700);p.y+=p.v*dt;p.r=Math.max(-0.45,Math.min(1.1,p.v/600));gx=(gx+SPD*dt)%40;
- for(const o of obs){o.x-=SPD*dt;if(!o.done&&o.x+o.w<p.x){o.done=1;score++;}}
+ p.v=Math.min(p.v+G*dt,700);p.y+=p.v*dt;p.r=Math.max(-0.45,Math.min(1.1,p.v/600));gx=(gx+spd*dt)%40;
+ for(const o of obs){o.x-=spd*dt;if(!o.done&&o.x+o.w<p.x){o.done=1;score++;const L=Math.floor(score/20);if(L>lvl){lvl=L;spd=SPD*Math.pow(1.05,L);flashT=t;}}}
  if(obs[0].x+obs[0].w<-60){obs.shift();add(obs[obs.length-1].x+SPACE);}
  if(p.y<-40)p.y=-40;
  if(p.y+PR>H-GROUND||obs.some(hit))die();}
@@ -93,11 +93,11 @@ function rr(a,b,w,h,r){x.beginPath();x.roundRect?x.roundRect(a,b,w,h,r):x.rect(a
 function txt(s,y,sz,c='#fff'){x.font=`800 ${sz}px system-ui,sans-serif`;x.textAlign='center';x.lineWidth=sz/6;x.strokeStyle='#1d2b4a';x.strokeText(s,W/2,y);x.fillStyle=c;x.fillText(s,W/2,y);}
 function panel(y,h){x.fillStyle='#1d2b4add';const w=Math.min(W-30,340);x.beginPath();x.roundRect?x.roundRect(W/2-w/2,y,w,h,16):x.rect(W/2-w/2,y,w,h);x.fill();}
 function draw(){x.setTransform(dpr*S,0,0,dpr*S,0,0);sky();if(st!=='start'&&obs)obs.forEach(drawObs);ground();if(p)phone();
- if(st==='play')txt(score,70,48);
+ if(st==='play'){txt(score,70,48);if(t-flashT<1.3){x.globalAlpha=Math.min(1,(1.3-(t-flashT))*2);txt('Speed up!',H*0.3,40,'#ffd54a');txt('Level '+(lvl+1)+' · '+Math.round(Math.pow(1.05,lvl)*100)+'% speed',H*0.3+36,18);x.globalAlpha=1;}}
  if(st==='start'){panel(H*0.12,150);txt('Mound Hopper',H*0.12+50,36,'#3ee0f0');txt('Fly over Moundsville!',H*0.12+88,18);txt(pname?'Player: '+pname+' · Best: '+best:'Best: '+best,H*0.12+122,18);txt('Tap, click or press Space',H*0.66,20);txt('to start',H*0.66+28,20);}
  if(st==='crash')txt(score,70,48);}
 let last=performance.now();p={x:Math.min(W*0.3,160),y:H*0.42,v:0,r:0};
-function loop(n){let dt=(n-last)/1000;last=n;if(dt>0.05)dt=0.05;if(dt>0)upd(dt);draw();requestAnimationFrame(loop);}requestAnimationFrame(loop);if(!pname)showName();
-window.__mh={get st(){return st},get cr(){return cr},get score(){return score},get p(){return p},get obs(){return obs},GAP};
+function loop(n){let dt=(n-last)/1000;last=n;if(dt>0.05)dt=0.05;if(dt>0)upd(dt);draw();requestAnimationFrame(loop);}requestAnimationFrame(loop);showName();
+window.__mh={get st(){return st},get spd(){return spd},setScore(v){score=v},get cr(){return cr},get score(){return score},get p(){return p},get obs(){return obs},GAP};
 })();
 </script></body></html>

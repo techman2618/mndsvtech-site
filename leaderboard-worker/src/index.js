@@ -20,7 +20,7 @@ export default{async fetch(req,env){const h=cors(req,env),u=new URL(req.url),ip=
   const run=await env.DB.prepare('SELECT * FROM runs WHERE id=?').bind(String(b.run||'')).first();
   if(!run||run.used||run.ip!==ip)return J({error:'invalid run'},400,h);
   await env.DB.prepare('UPDATE runs SET used=1 WHERE id=?').bind(run.id).run();
-  const secs=(Date.now()-run.started)/1000;if(score>0&&secs<score*SEC_PER_POINT)return J({error:'too fast'},400,h);
+  const secs=(Date.now()-run.started)/1000;let need=0;for(let i=0;i<score;i++)need+=1.3684/Math.pow(1.05,Math.floor(i/20));if(score>0&&secs<need*0.7)return J({error:'too fast'},400,h);
   const ins=await env.DB.prepare('INSERT INTO scores(name,score,created) VALUES(?,?,?)').bind(name,score,Date.now()).run();
   const rk=await env.DB.prepare('SELECT COUNT(*)+1 r FROM scores WHERE score>?').bind(score).first();
   return J({ok:true,id:ins.meta.last_row_id,rank:rk.r,top:await top(env)},200,h)}
