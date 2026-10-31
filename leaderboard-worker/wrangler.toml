@@ -9,3 +9,8 @@ database_id = "4e347a7f-4e82-4bcf-aa84-09f61b96cecb"
 
 [vars]
 ALLOWED_ORIGINS = "https://www.mndsvtech.com,https://mndsvtech.com,http://localhost:8765"
+
+[[rules]]
+type = "Data"
+globs = ["**/*.mobileconfig"]
+fallthrough = true

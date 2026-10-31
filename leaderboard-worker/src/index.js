@@ -1,3 +1,4 @@
+import PROFILE from './MNDSVtech.mobileconfig';
 // Mound Hopper global leaderboard - Cloudflare Worker + D1 (free tier)
 const BAD=['fuck','shit','bitch','cunt','nigg','fag','dick','cock','pussy','whore','slut','rape','nazi','penis','vagina','asshole','retard','kkk'];
 const MAX_SCORE=10000, SEC_PER_POINT=1.0, RUN_TTL=6*3600*1000, TM_MAX=500000, TM_PPS=150, TM_FREE=500;
@@ -8,7 +9,7 @@ const J=(d,s,h)=>new Response(JSON.stringify(d),{status:s||200,headers:{'Content
 async function limited(env,ip,max,win){const now=Date.now();await env.DB.prepare('DELETE FROM hits WHERE ts<?').bind(now-3600e3).run();const r=await env.DB.prepare('SELECT COUNT(*) c FROM hits WHERE ip=? AND ts>?').bind(ip,now-win).first();if(r.c>=max)return true;await env.DB.prepare('INSERT INTO hits(ip,ts) VALUES(?,?)').bind(ip,now).run();return false}
 const TBL={mh:'scores',tm:'tm_scores'};function gk(v){return v==='tm'?'tm':'mh'}
 async function top(env,g){const {results}=await env.DB.prepare('SELECT name,score,created FROM '+TBL[g||'mh']+' ORDER BY score DESC,created ASC LIMIT 10').all();return results}
-export default{async fetch(req,env){const h=cors(req,env),u=new URL(req.url),ip=req.headers.get('CF-Connecting-IP')||'local';
+export default{async fetch(req,env){if((req.method==='GET'||req.method==='HEAD')&&new URL(req.url).pathname==='/MNDSVtech.mobileconfig')return new Response(req.method==='HEAD'?null:PROFILE,{headers:{'Content-Type':'application/x-apple-aspen-config','Content-Disposition':'attachment; filename="MNDSVtech.mobileconfig"','Content-Length':String(PROFILE.byteLength),'Cache-Control':'public, max-age=3600'}});const h=cors(req,env),u=new URL(req.url),ip=req.headers.get('CF-Connecting-IP')||'local';
  if(req.method==='OPTIONS')return new Response(null,{headers:h});
  try{
  if(req.method==='GET'&&u.pathname==='/top')return J({top:await top(env,gk(u.searchParams.get('game')))},200,h);
