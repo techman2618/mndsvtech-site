@@ -47,7 +47,7 @@ const VEH={phone:{name:'Cell Phone',w:84,h:34,r:15,ax:30,ay:-21,cap:100,eng:1,sp
  cyber:{name:'Cybertruck',w:124,h:38,r:18,ax:43,ay:-22,cap:180,eng:1.67,spin:22,M:7,grip:.45,sus:1.3,price:250000,tread:1}};
 for(const k in VEH){VEH[k].ay0=VEH[k].ay;VEH[k].r0=VEH[k].r}
 const VORD=['phone','scooter','quad','utv','modely','models','cyber'];
-const LVS=[[1,'Moundsville Hills',0,'Rolling WV hills'],[2,'The Penitentiary',10000,'Prison · 2× coins'],[3,'The Avenue',20000,'Flat 4 lanes · 1.5× coins'],[4,'Coal Mine',50000,'Floor & roof · ₿5 coins'],[5,'The Moon',100000,'Starship · low gravity · 2.5× coins']];
+const LVS=[[1,'Moundsville Hills',0,'Rolling WV hills'],[2,'The Penitentiary',10000,'Prison cell blocks'],[3,'The Avenue',20000,'Flat 4 lanes'],[4,'Coal Mine',50000,'Floor & roof'],[5,'The Moon',100000,'Starship · low gravity']];
 const CM={1:1,2:2,3:1.5,4:1,5:2.5};const bkey=l=>l===1?'best':l===2?'best2':'best'+l;
 // ---------- terrain ----------
 const PXM=20,SEG=40;let pts,mounds,seedR,LV=1,ph=0,padY=null,distOff=0,ship=null,launchT=0,airT=0,airB=0,pops=[];const PADX=200+110*20;
