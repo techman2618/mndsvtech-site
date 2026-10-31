@@ -18,4 +18,4 @@ if(ios)document.getElementById('choices').prepend(document.getElementById('ios')
 addEventListener('beforeinstallprompt',function(e){e.preventDefault();dp=e});
 document.getElementById('andbtn').onclick=function(){if(dp){dp.prompt();dp.userChoice.then(function(c){if(c.outcome==='accepted')document.getElementById('anddone').hidden=false;dp=null})}else document.getElementById('andsteps').scrollIntoView({behavior:'smooth'})};
 document.getElementById('iosbtn').onclick=function(){document.querySelector('#ios .steps').scrollIntoView({behavior:'smooth'})};})();</script>
-<script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("/sw.js"));</script></body></html>
+<script>if("serviceWorker"in navigator){var hadC=!!navigator.serviceWorker.controller,rl=0;navigator.serviceWorker.addEventListener("controllerchange",function(){if(hadC&&!rl){rl=1;location.reload()}});addEventListener("load",function(){navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).then(function(r){r.update()})})}</script></body></html>
