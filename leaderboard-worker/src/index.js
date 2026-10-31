@@ -1,13 +1,13 @@
 import PROFILE from './MNDSVtech.mobileconfig';
 // Mound Hopper global leaderboard - Cloudflare Worker + D1 (free tier)
 const BAD=['fuck','shit','bitch','cunt','nigg','fag','dick','cock','pussy','whore','slut','rape','nazi','penis','vagina','asshole','retard','kkk'];
-const HC_MAX=200000,HC_MPS=45,HC_FREE=60,MAX_SCORE=10000, SEC_PER_POINT=1.0, RUN_TTL=6*3600*1000, TM_MAX=500000, TM_PPS=150, TM_FREE=500;
+const TW_MAX=10000000,TW_PPS=3000,TW_FREE=2000,HC_MAX=200000,HC_MPS=45,HC_FREE=60,MAX_SCORE=10000, SEC_PER_POINT=1.0, RUN_TTL=6*3600*1000, TM_MAX=500000, TM_PPS=150, TM_FREE=500;
 function clean(n){return String(n||'').normalize('NFKC').replace(/[^\p{L}\p{N} ._\-!]/gu,'').replace(/\s+/g,' ').trim().slice(0,12)}
 function bad(n){const s=n.toLowerCase().replace(/[^a-z0-9]/g,'').replace(/0/g,'o').replace(/1/g,'i').replace(/3/g,'e').replace(/4/g,'a').replace(/5/g,'s').replace(/\$/g,'s');return BAD.some(w=>s.includes(w))}
 function cors(req,env){const o=req.headers.get('Origin')||'';const ok=(env.ALLOWED_ORIGINS||'').split(',').includes(o);return{'Access-Control-Allow-Origin':ok?o:'https://www.mndsvtech.com','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type','Vary':'Origin'}}
 const J=(d,s,h)=>new Response(JSON.stringify(d),{status:s||200,headers:{'Content-Type':'application/json','Cache-Control':'no-store',...h}});
 async function limited(env,ip,max,win){const now=Date.now();await env.DB.prepare('DELETE FROM hits WHERE ts<?').bind(now-3600e3).run();const r=await env.DB.prepare('SELECT COUNT(*) c FROM hits WHERE ip=? AND ts>?').bind(ip,now-win).first();if(r.c>=max)return true;await env.DB.prepare('INSERT INTO hits(ip,ts) VALUES(?,?)').bind(ip,now).run();return false}
-const TBL={mh:'scores',tm:'tm_scores',hc:'hc_scores'};function gk(v){return v==='tm'||v==='hc'?v:'mh'}
+const TBL={mh:'scores',tm:'tm_scores',hc:'hc_scores',tw:'tw_scores'};function gk(v){return v==='tm'||v==='hc'||v==='tw'?v:'mh'}
 // America/New_York day/week (Sun) start, in ms
 function nyStart(now,week){const f=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23',weekday:'short'});const q={};for(const x of f.formatToParts(new Date(now)))q[x.type]=x.value;
  const asUTC=Date.UTC(+q.year,+q.month-1,+q.day,+q.hour,+q.minute,+q.second),off=asUTC-Math.floor(now/1000)*1000;let mid=Date.UTC(+q.year,+q.month-1,+q.day);
@@ -49,11 +49,11 @@ if(new URL(req.url).pathname==='/live'){const o=req.headers.get('Origin')||'';if
   let b;try{b=await req.json()}catch{return J({error:'bad json'},400,h)}
   const g=gk(b.game),name=clean(b.name),score=Number(b.score);
   if(name.length<1)return J({error:'name required'},400,h);if(bad(name))return J({error:'pick another name'},400,h);
-  if(!Number.isInteger(score)||score<0||score>(g==='tm'?TM_MAX:g==='hc'?HC_MAX:MAX_SCORE))return J({error:'bad score'},400,h);
+  if(!Number.isInteger(score)||score<0||score>(g==='tm'?TM_MAX:g==='hc'?HC_MAX:g==='tw'?TW_MAX:MAX_SCORE))return J({error:'bad score'},400,h);
   const run=await env.DB.prepare('SELECT * FROM runs WHERE id=?').bind(String(b.run||'')).first();
   if(!run||run.used||run.ip!==ip||(run.game||'mh')!==g)return J({error:'invalid run'},400,h);
   await env.DB.prepare('UPDATE runs SET used=1 WHERE id=?').bind(run.id).run();
-  const secs=(Date.now()-run.started)/1000;if(g==='hc'){if(score>secs*HC_MPS+HC_FREE)return J({error:'too fast'},400,h)}else if(g==='tm'){if(score>secs*TM_PPS+TM_FREE)return J({error:'too fast'},400,h)}else{let need=0;for(let i=0;i<score;i++)need+=1.3684/Math.pow(1.05,Math.floor(i/20));if(score>0&&secs<need*0.7)return J({error:'too fast'},400,h)}
+  const secs=(Date.now()-run.started)/1000;if(g==='tw'){if(score>secs*TW_PPS+TW_FREE)return J({error:'too fast'},400,h)}else if(g==='hc'){if(score>secs*HC_MPS+HC_FREE)return J({error:'too fast'},400,h)}else if(g==='tm'){if(score>secs*TM_PPS+TM_FREE)return J({error:'too fast'},400,h)}else{let need=0;for(let i=0;i<score;i++)need+=1.3684/Math.pow(1.05,Math.floor(i/20));if(score>0&&secs<need*0.7)return J({error:'too fast'},400,h)}
   const ins=await env.DB.prepare('INSERT INTO '+TBL[g]+'(name,score,created) VALUES(?,?,?)').bind(name,score,Date.now()).run();
   const rk=await env.DB.prepare('SELECT COUNT(*)+1 r FROM '+TBL[g]+' WHERE score>?').bind(score).first();
   return J({ok:true,id:ins.meta.last_row_id,rank:rk.r,...(await boards(env,g))},200,h)}

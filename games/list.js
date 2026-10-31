@@ -2,5 +2,6 @@
 window.MNDSV_GAMES=[
  {name:'Mound Hopper',url:'/games/mound-hopper.html',img:'/images/mound-hopper.svg',pos:'40% 50%'},
  {name:'Tech Merge',url:'/games/tech-merge.html',img:'/images/tech-merge.svg',pos:'50% 60%'},
- {name:'Mound Climb',url:'/games/mound-climb.html',img:'/images/mound-climb.svg',pos:'25% 70%'}
+ {name:'Mound Climb',url:'/games/mound-climb.html',img:'/images/mound-climb.svg',pos:'25% 70%'},
+ {name:'Mound Glider',url:'/games/mound-glider.html',img:'/images/mound-glider.svg',pos:'55% 40%'}
 ];
