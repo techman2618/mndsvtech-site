@@ -28,7 +28,19 @@ export class LiveRoom{constructor(state,env){this.state=state;this.env=env;this.
    if(!this.p.size){clearInterval(this.timer);this.timer=null;return}
    const list=[];for(const[k,v]of this.p)if(v.n&&v.a)list.push({i:k,n:v.n,y:v.y,s:v.s});
    for(const[k,v]of this.p){const others=list.filter(o=>o.i!==k).slice(0,10);try{v.ws.send(JSON.stringify({c:this.p.size,g:others}))}catch{this.p.delete(k)}}},100)}}
-export default{async fetch(req,env){if(new URL(req.url).pathname==='/live'){const o=req.headers.get('Origin')||'';if(!(env.ALLOWED_ORIGINS||'').split(',').includes(o))return new Response('forbidden',{status:403});if(req.headers.get('Upgrade')!=='websocket')return new Response('expected websocket',{status:426});return env.LIVE.get(env.LIVE.idFromName('mh')).fetch(req)}if((req.method==='GET'||req.method==='HEAD')&&new URL(req.url).pathname==='/MNDSVtech.mobileconfig')return new Response(req.method==='HEAD'?null:PROFILE,{headers:{'Content-Type':'application/x-apple-aspen-config','Content-Disposition':'attachment; filename="MNDSVtech.mobileconfig"','Content-Length':String(PROFILE.byteLength),'Cache-Control':'public, max-age=3600'}});const h=cors(req,env),u=new URL(req.url),ip=req.headers.get('CF-Connecting-IP')||'local';
+// Download counter: no personal data kept; hash only used for 1h dedupe then wiped
+const PLAT=['android','ios','web'];
+async function countDl(env,req,pl){try{const ip=req.headers.get('CF-Connecting-IP')||'local',now=Date.now();const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('mndsv-dl|'+ip+'|'+pl));const h=[...new Uint8Array(buf)].slice(0,12).map(b=>b.toString(16).padStart(2,'0')).join('');
+ await env.DB.prepare('UPDATE downloads SET h=NULL WHERE h IS NOT NULL AND ts<?').bind(now-3600e3).run();
+ const r=await env.DB.prepare('SELECT 1 FROM downloads WHERE h=? LIMIT 1').bind(h).first();if(!r)await env.DB.prepare('INSERT INTO downloads(platform,ts,h) VALUES(?,?,?)').bind(pl,now,h).run()}catch(e){}}
+async function dlCounts(env){const {results}=await env.DB.prepare('SELECT platform,COUNT(*) c FROM downloads GROUP BY platform').all();const o={android:0,ios:0,web:0};for(const r of results)if(r.platform in o)o[r.platform]=r.c;o.total=o.android+o.ios+o.web;return o}
+export default{async fetch(req,env,ctx){{const pu=new URL(req.url).pathname;
+ if((req.method==='GET'||req.method==='HEAD')&&pu==='/dl/android'){if(req.method==='GET')await countDl(env,req,'android');return new Response(null,{status:302,headers:{Location:'https://www.mndsvtech.com/downloads/MNDSVtech.apk','Cache-Control':'no-store'}})}
+ if(req.method==='GET'&&pu==='/dl/ios'){await countDl(env,req,'ios');return new Response(PROFILE,{headers:{'Content-Type':'application/x-apple-aspen-config','Content-Disposition':'attachment; filename="MNDSVtech.mobileconfig"','Content-Length':String(PROFILE.byteLength),'Cache-Control':'no-store'}})}
+ if(pu==='/dl/web'||pu==='/downloads'){const h=cors(req,env);if(req.method==='OPTIONS')return new Response(null,{headers:h});
+  if(pu==='/dl/web'&&req.method==='POST'){await countDl(env,req,'web');return J({ok:true},200,h)}
+  if(pu==='/downloads'&&req.method==='GET')return J(await dlCounts(env),200,h)}}
+if(new URL(req.url).pathname==='/live'){const o=req.headers.get('Origin')||'';if(!(env.ALLOWED_ORIGINS||'').split(',').includes(o))return new Response('forbidden',{status:403});if(req.headers.get('Upgrade')!=='websocket')return new Response('expected websocket',{status:426});return env.LIVE.get(env.LIVE.idFromName('mh')).fetch(req)}if((req.method==='GET'||req.method==='HEAD')&&new URL(req.url).pathname==='/MNDSVtech.mobileconfig')return new Response(req.method==='HEAD'?null:PROFILE,{headers:{'Content-Type':'application/x-apple-aspen-config','Content-Disposition':'attachment; filename="MNDSVtech.mobileconfig"','Content-Length':String(PROFILE.byteLength),'Cache-Control':'public, max-age=3600'}});const h=cors(req,env),u=new URL(req.url),ip=req.headers.get('CF-Connecting-IP')||'local';
  if(req.method==='OPTIONS')return new Response(null,{headers:h});
  try{
  if(req.method==='GET'&&u.pathname==='/top')return J(await boards(env,gk(u.searchParams.get('game'))),200,h);
