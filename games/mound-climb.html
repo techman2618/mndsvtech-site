@@ -27,6 +27,8 @@ const fmt=n=>Math.floor(n).toLocaleString('en-US');
 // ---------- save ----------
 const KEY='moundClimb';let sv={btc:0,up:{spd:0,sus:0,tir:0},own:{phone:1,scooter:0,quad:0,utv:0,modely:0,models:0,cyber:0},sel:'phone',best:0,lv:1,lvOwn:{1:1,2:0,3:0,4:0,5:0},best2:0};
 try{const o=JSON.parse(localStorage.getItem(KEY)||'null');if(o){sv={...sv,...o,up:{...sv.up,...(o.up||{})},own:{...sv.own,...(o.own||{})},lvOwn:{...sv.lvOwn,...(o.lvOwn||{})}}}}catch(e){}
+if(!sv.upv){sv.upv={};for(const k in sv.own)if(sv.own[k])sv.upv[k]={spd:sv.up.spd|0,sus:sv.up.sus|0,tir:sv.up.tir|0}}
+const UPV=k=>sv.upv[k]||(sv.upv[k]={spd:0,sus:0,tir:0});
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(sv))}catch(e){}};
 let pname=clean(localStorage.getItem('moundClimbName')||localStorage.getItem('moundHopperName')||'');
 const UPC=[400,1200,3000,7500,18000,40000],MAXL=6,CYBER=250000;
@@ -59,7 +61,7 @@ function hAt(xx){if(LV===5&&!ph&&xx>PADX-260){if(padY==null)padY=base(PADX-260);
 function slope(xx){return(hAt(xx+1)-hAt(xx-1))/2}
 // ---------- state ----------
 let st='menu',car,V,wh,items,camx=0,camy=0,t=0,gas=0,brk=0,batt,dist,coinsRun,deadT=0,lowT=0,upT=0,why='',runId=null,nextBolt,nextCoin,nextMound,nextItemX;
-function reset(){LV=sv.lvOwn[sv.lv]?sv.lv:1;ph=0;padY=null;distOff=0;GR=900;airT=0;airB=0;pops=[];ship=LV===5?{y:0,v:0}:null;seedR=(Date.now()%2147483646)+1;pts=[0];pts.sl=0;mounds=[];V=VEH[sv.own[sv.sel]?sv.sel:'phone'];const u=sv.up;
+function reset(){LV=sv.lvOwn[sv.lv]?sv.lv:1;ph=0;padY=null;distOff=0;GR=900;airT=0;airB=0;pops=[];ship=LV===5?{y:0,v:0}:null;seedR=(Date.now()%2147483646)+1;pts=[0];pts.sl=0;mounds=[];V=VEH[sv.own[sv.sel]?sv.sel:'phone'];const u=UPV(sv.own[sv.sel]?sv.sel:'phone');
  V.k=260*(1+.14*u.sus)*V.sus;V.c=13*(1+.22*u.sus)*V.sus;V.mu=.85+.17*u.tir+V.grip;V.tq=26000*V.eng*(1+.16*u.spd);V.ms=V.spin*(1+.1*u.spd)*V.eng;
  const y0=40;car={x:200,y:y0+V.r+30,vx:0,vy:0,a:0,w:0};wh=[-1,1].map(sg=>({x:200+sg*V.ax,y:y0+V.r,vx:0,vy:0,sp:0,th:0,on:0,sg}));
  items=[];batt=V.cap;dist=0;coinsRun=0;deadT=0;lowT=0;upT=0;why='';nextBolt=24*PXM;nextCoin=12*PXM;nextMound=180*PXM;nextItemX=0;camx=car.x;camy=car.y;}
@@ -254,8 +256,8 @@ function loop(n){let d=(n-last)/1000;last=n;if(d>.05)d=.05;t+=d;
 function preview(kind,locked){const c=document.createElement('canvas'),w=150,h=78;c.width=w*2;c.height=h*2;c.style.width=w+'px';c.style.height=h+'px';const g=c.getContext('2d'),sv0=x;x=g;g.setTransform(2,0,0,2,0,0);const v=VEH[kind],sc=Math.min(1.15,118/v.w);g.translate(w/2,h/2);g.scale(sc,sc);
  for(const sg of [-1,1]){g.strokeStyle=locked?'#000':'#555';g.lineWidth=4;g.beginPath();g.moveTo(sg*v.ax,-v.ay*0);g.lineTo(sg*v.ax,-v.ay+2);g.stroke();if(locked){g.fillStyle='#000';g.beginPath();g.arc(sg*v.ax,-v.ay+2,v.r,0,7);g.fill()}else wheel(sg*v.ax,-v.ay+2,v.r,0,kind==='cyber',v.tread)}
  body(kind,locked,'');x=sv0;return c}
-function upgradeRow(k){const L=sv.up[k],row=el('div',null,'up'),info=el('div',null,'ui');info.append(el('b',UPN[k][0]),el('span',UPN[k][1],'sm'));const pip=el('div',null,'pips');for(let i=0;i<MAXL;i++)pip.append(el('i',null,i<L?'on':''));info.append(pip);
- const b=el('button',L>=MAXL?'MAX':'₿ '+fmt(UPC[L]),'ub');b.disabled=L>=MAXL||sv.btc<UPC[L];b.onclick=()=>{if(sv.btc<UPC[L])return;sv.btc-=UPC[L];sv.up[k]++;save();showMenu()};row.append(info,b);return row}
+function upgradeRow(k){const L=UPV(sv.sel)[k],row=el('div',null,'up'),info=el('div',null,'ui');info.append(el('b',UPN[k][0]),el('span',UPN[k][1],'sm'));const pip=el('div',null,'pips');for(let i=0;i<MAXL;i++)pip.append(el('i',null,i<L?'on':''));info.append(pip);
+ const b=el('button',L>=MAXL?'MAX':'₿ '+fmt(UPC[L]),'ub');b.disabled=L>=MAXL||sv.btc<UPC[L];b.onclick=()=>{if(sv.btc<UPC[L])return;sv.btc-=UPC[L];UPV(sv.sel)[k]++;save();showMenu()};row.append(info,b);return row}
 const LV2=10000;
 function lvPrev(k,locked){const c=document.createElement('canvas'),w=150,h=78;c.width=w*2;c.height=h*2;c.style.width=w+'px';c.style.height=h+'px';const g=c.getContext('2d');g.scale(2,2);
  if(k===1){const sg=g.createLinearGradient(0,0,0,h);sg.addColorStop(0,'#5ab9ec');sg.addColorStop(1,'#cdeefb');g.fillStyle=sg;g.fillRect(0,0,w,h);g.fillStyle='#4f8fb8';g.fillRect(0,40,w,8);g.fillStyle='#4f9a33';g.beginPath();g.moveTo(0,h);g.quadraticCurveTo(40,30,75,50);g.quadraticCurveTo(110,70,150,45);g.lineTo(w,h);g.fill();g.fillStyle='#d33';g.fillRect(40,34,8,5);g.fillStyle='#7b5a33';g.fillRect(39,34,1.5,12)}
@@ -269,12 +271,12 @@ function showMenu(){st='menu';reset();ov.classList.remove('hide');document.body.
  const i=el('input');i.maxLength=12;i.value=pname;i.placeholder='Your name';i.id='nm';i.autocomplete='nickname';
  const vs=el('div',null,'vs g2');for(const k of VORD){const own=sv.own[k],card=el('div',null,'vc'+(sv.sel===k?' sel':'')+(own?'':' lock'));card.append(preview(k,!own),el('b',own?VEH[k].name:'??? Locked'));
   if(own){card.append(el('span',sv.sel===k?'✔ Selected':'Tap to drive','sm'));card.onclick=()=>{sv.sel=k;save();showMenu()}}
-  else{const pr=VEH[k].price,b=el('button','🔒 ₿ '+fmt(pr),'ub');b.disabled=sv.btc<pr;b.onclick=e=>{e.stopPropagation();if(sv.btc<pr)return;sv.btc-=pr;sv.own[k]=1;sv.sel=k;save();showMenu()};card.append(b)}vs.append(card)}
+  else{const pr=VEH[k].price,b=el('button','🔒 ₿ '+fmt(pr),'ub');b.disabled=sv.btc<pr;b.onclick=e=>{e.stopPropagation();if(sv.btc<pr)return;sv.btc-=pr;sv.own[k]=1;sv.upv[k]={spd:0,sus:0,tir:0};sv.sel=k;save();showMenu()};card.append(b)}vs.append(card)}
  const go=el('button','▶ Drive!','go');
  const ls=el('div',null,'vs g2');for(const [k,nm,pr,note] of LVS){const own=sv.lvOwn[k],card=el('div',null,'vc lv'+(sv.lv===k?' sel':'')+(own?'':' lock'));card.append(lvPrev(k,!own),el('b',own?nm:'🔒 '+nm));
   if(own){card.append(el('span',(sv.lv===k?'✔ Selected':'Tap to play')+((sv[bkey(k)]||0)>0?' · Best '+fmt(sv[bkey(k)])+' m':''),'sm'));card.onclick=()=>{sv.lv=k;save();showMenu()}}
   else{const b=el('button','₿ '+fmt(pr),'ub');b.disabled=sv.btc<pr;b.onclick=e=>{e.stopPropagation();if(sv.btc<pr)return;sv.btc-=pr;sv.lvOwn[k]=1;sv.lv=k;save();showMenu()};card.append(el('span','Level '+k+' · '+note,'sm'),b)}ls.append(card)}
- bx.replaceChildren(el('h2','Mound Climb'),el('p','Garage · Best: '+fmt(Math.max(...LVS.map(l=>sv[bkey(l[0])]||0)))+' m','sm'),el('p','₿ '+fmt(sv.btc),'btc'),i,el('p','Level','hd'),ls,el('p','Vehicle','hd'),vs,el('p','Upgrades (all vehicles)','hd'),upgradeRow('spd'),upgradeRow('sus'),upgradeRow('tir'),go);
+ bx.replaceChildren(el('h2','Mound Climb'),el('p','Garage · Best: '+fmt(Math.max(...LVS.map(l=>sv[bkey(l[0])]||0)))+' m','sm'),el('p','₿ '+fmt(sv.btc),'btc'),i,el('p','Level','hd'),ls,el('p','Vehicle','hd'),vs,el('p','Upgrades · '+VEH[sv.sel].name,'hd'),upgradeRow('spd'),upgradeRow('sus'),upgradeRow('tir'),go);
  const start=()=>{const n=clean(i.value);if(!n){i.focus();i.placeholder='Enter your name first';return}pname=n;try{localStorage.setItem('moundClimbName',n)}catch(_){}i.blur();ov.classList.add('hide');document.body.classList.add('playing');reset();st='play';startRun()};
  go.onclick=start;i.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')start()}}
 function startRun(){runId=null;if(!API)return;fetch(API+'/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({game:'hc'})}).then(r=>r.json()).then(d=>{runId=d.run||null}).catch(()=>{})}
