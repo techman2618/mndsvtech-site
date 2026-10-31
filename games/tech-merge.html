@@ -86,7 +86,7 @@ function table(rows,me){const tb=el('table'),hr=el('tr');['#','Name','Score'].fo
 function showOver(){st='over';if(score>best){best=score;try{localStorage.setItem('techMergeBest',best)}catch(_){}}const lb=el('p','Loading global top 10…','sm');let tb=el('div');const b=el('button','Play again');
  bx.replaceChildren(el('h2','System Crash!'),el('p','Score','sm'),el('p',score,'big'),el('p','Your best: '+best,'sm'),lb,tb,b);ov.classList.remove('hide');b.onclick=showName;
  const fill=d=>{const g=table(d.top||[],r=>d.ok&&r.name===pname&&r.score===score);tb.replaceWith(g);tb=g};
- const fail=()=>{lb.textContent='Global scores unavailable right now'};
+ const fail=()=>{lb.textContent='Offline - showing your local best: '+best};
  if(runId)fetch(API+'/score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({game:'tm',name:pname,score,run:runId})}).then(r=>r.json()).then(d=>{if(!d.top)return fetch(API+'/top?game=tm').then(r=>r.json()).then(t=>{fill(t);lb.textContent='🌎 Global top 10 · '+(d.error||'')});fill(d);lb.textContent='🌎 Global top 10'+(d.ok?' · you are #'+d.rank:'')}).catch(fail);
  else fetch(API+'/top?game=tm').then(r=>r.json()).then(d=>{fill(d);lb.textContent='🌎 Global top 10'}).catch(fail)}
 /* ---------- loop ---------- */
