@@ -8,6 +8,13 @@ function cors(req,env){const o=req.headers.get('Origin')||'';const ok=(env.ALLOW
 const J=(d,s,h)=>new Response(JSON.stringify(d),{status:s||200,headers:{'Content-Type':'application/json','Cache-Control':'no-store',...h}});
 async function limited(env,ip,max,win){const now=Date.now();await env.DB.prepare('DELETE FROM hits WHERE ts<?').bind(now-3600e3).run();const r=await env.DB.prepare('SELECT COUNT(*) c FROM hits WHERE ip=? AND ts>?').bind(ip,now-win).first();if(r.c>=max)return true;await env.DB.prepare('INSERT INTO hits(ip,ts) VALUES(?,?)').bind(ip,now).run();return false}
 const TBL={mh:'scores',tm:'tm_scores'};function gk(v){return v==='tm'?'tm':'mh'}
+// America/New_York day/week (Sun) start, in ms
+function nyStart(now,week){const f=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23',weekday:'short'});const q={};for(const x of f.formatToParts(new Date(now)))q[x.type]=x.value;
+ const asUTC=Date.UTC(+q.year,+q.month-1,+q.day,+q.hour,+q.minute,+q.second),off=asUTC-Math.floor(now/1000)*1000;let mid=Date.UTC(+q.year,+q.month-1,+q.day);
+ if(week)mid-=((['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(q.weekday))*864e5);let t=mid-off;
+ const chk=new Date(t).toLocaleString('en-US',{timeZone:'America/New_York',hour:'2-digit',hourCycle:'h23'});if(+chk!==0)t+=(+chk>12?24-+chk:-+chk)*36e5;return t}
+async function since(env,g,t){const {results}=await env.DB.prepare('SELECT name,score,created FROM '+TBL[g||'mh']+' WHERE created>=? ORDER BY score DESC,created ASC LIMIT 5').bind(t).all();return results}
+async function boards(env,g){const n=Date.now();const [a,day,week]=await Promise.all([top(env,g),since(env,g,nyStart(n,0)),since(env,g,nyStart(n,1))]);return{top:a,day,week}}
 async function top(env,g){const {results}=await env.DB.prepare('SELECT name,score,created FROM '+TBL[g||'mh']+' ORDER BY score DESC,created ASC LIMIT 10').all();return results}
 // Live ghosts: one Durable Object room, WebSockets, batched broadcast ~10x/sec
 export class LiveRoom{constructor(state,env){this.state=state;this.env=env;this.p=new Map();this.timer=null}
@@ -24,7 +31,7 @@ export class LiveRoom{constructor(state,env){this.state=state;this.env=env;this.
 export default{async fetch(req,env){if(new URL(req.url).pathname==='/live'){const o=req.headers.get('Origin')||'';if(!(env.ALLOWED_ORIGINS||'').split(',').includes(o))return new Response('forbidden',{status:403});if(req.headers.get('Upgrade')!=='websocket')return new Response('expected websocket',{status:426});return env.LIVE.get(env.LIVE.idFromName('mh')).fetch(req)}if((req.method==='GET'||req.method==='HEAD')&&new URL(req.url).pathname==='/MNDSVtech.mobileconfig')return new Response(req.method==='HEAD'?null:PROFILE,{headers:{'Content-Type':'application/x-apple-aspen-config','Content-Disposition':'attachment; filename="MNDSVtech.mobileconfig"','Content-Length':String(PROFILE.byteLength),'Cache-Control':'public, max-age=3600'}});const h=cors(req,env),u=new URL(req.url),ip=req.headers.get('CF-Connecting-IP')||'local';
  if(req.method==='OPTIONS')return new Response(null,{headers:h});
  try{
- if(req.method==='GET'&&u.pathname==='/top')return J({top:await top(env,gk(u.searchParams.get('game')))},200,h);
+ if(req.method==='GET'&&u.pathname==='/top')return J(await boards(env,gk(u.searchParams.get('game'))),200,h);
  if(req.method==='POST'&&u.pathname==='/start'){if(await limited(env,ip+':start',60,60e3))return J({error:'slow down'},429,h);let sb={};try{sb=await req.json()}catch{}const g=gk(sb&&sb.game);const id=crypto.randomUUID();await env.DB.prepare('INSERT INTO runs(id,ip,started,game) VALUES(?,?,?,?)').bind(id,ip,Date.now(),g).run();await env.DB.prepare('DELETE FROM runs WHERE started<?').bind(Date.now()-RUN_TTL).run();return J({run:id},200,h)}
  if(req.method==='POST'&&u.pathname==='/score'){if(await limited(env,ip+':score',10,60e3))return J({error:'slow down'},429,h);
   let b;try{b=await req.json()}catch{return J({error:'bad json'},400,h)}
@@ -37,5 +44,5 @@ export default{async fetch(req,env){if(new URL(req.url).pathname==='/live'){cons
   const secs=(Date.now()-run.started)/1000;if(g==='tm'){if(score>secs*TM_PPS+TM_FREE)return J({error:'too fast'},400,h)}else{let need=0;for(let i=0;i<score;i++)need+=1.3684/Math.pow(1.05,Math.floor(i/20));if(score>0&&secs<need*0.7)return J({error:'too fast'},400,h)}
   const ins=await env.DB.prepare('INSERT INTO '+TBL[g]+'(name,score,created) VALUES(?,?,?)').bind(name,score,Date.now()).run();
   const rk=await env.DB.prepare('SELECT COUNT(*)+1 r FROM '+TBL[g]+' WHERE score>?').bind(score).first();
-  return J({ok:true,id:ins.meta.last_row_id,rank:rk.r,top:await top(env,g)},200,h)}
- return J({error:'not found'},404,h)}catch(e){return J({error:'server error'},500,h)}}};
+  return J({ok:true,id:ins.meta.last_row_id,rank:rk.r,...(await boards(env,g))},200,h)}
+ return J({error:'not found'},404,h)}catch(e){console.log('ERR',e&&e.stack);return J({error:'server error'},500,h)}}};
