@@ -1,6 +1,7 @@
+/* safe area for installed app (status bar) */
 *{box-sizing:border-box}body{margin:0;font:17px/1.6 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#1e293b;background:#f8fafc}
 .wrap{max-width:1100px;margin:0 auto;padding:0 20px}a{color:#0891b2}
-header{background:#0b1f3a;position:sticky;top:0;z-index:9}.bar{display:flex;align-items:center;justify-content:space-between;height:64px}
+header{background:#0b1f3a;position:sticky;top:0;z-index:9;padding-top:env(safe-area-inset-top,0px)}.bar{display:flex;align-items:center;justify-content:space-between;height:64px}
 .logo{color:#fff;font-weight:800;font-size:22px;text-decoration:none}.logo span{color:#22d3ee}
 nav a{color:#cbd5e1;text-decoration:none;margin-left:24px;font-weight:600}nav a.on,nav a:hover{color:#22d3ee}.menu{display:none;background:none;border:0;color:#fff;font-size:26px}
 .hero{background:linear-gradient(135deg,#0b1f3a,#134e6f);color:#fff;padding:96px 0}.hero.sm{padding:64px 0}.hero h1{font-size:clamp(30px,5vw,52px);line-height:1.15;margin:.2em 0;max-width:850px}
@@ -12,7 +13,7 @@ section.wrap{padding-top:48px;padding-bottom:16px}.grid3{display:grid;grid-templ
 .badge{display:inline-block;background:#22d3ee;color:#0b1f3a;font-weight:800;padding:8px 16px;border-radius:999px}
 label{display:block;font-weight:600;margin:12px 0}input,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;font:inherit;margin-top:4px}.note{font-size:14px;color:#64748b}
 footer{background:#0b1f3a;color:#94a3b8;padding:28px 0;margin-top:60px;font-size:14px}footer a{color:#22d3ee}
-@media(max-width:700px){.menu{display:block}nav{display:none;position:absolute;top:64px;left:0;right:0;background:#0b1f3a;padding:10px 20px}.open nav{display:block}nav a{display:block;margin:10px 0}}
+@media(max-width:700px){.menu{display:block}nav{display:none;position:absolute;top:100%;left:0;right:0;background:#0b1f3a;padding:10px 20px}.open nav{display:block}nav a{display:block;margin:10px 0}}
 
 .stars{color:#f5b301;font-size:20px;letter-spacing:2px;margin:0 0 8px}.reviews{margin-top:40px}.reviews .card p{margin:0 0 10px}.btn.ghost-dark{background:transparent;color:#0b1f3a;border:2px solid #0b1f3a}
 .plans{margin-top:40px}.plan .price{font-size:34px;font-weight:800;color:#0b1f3a;margin:4px 0 10px}.plan .price span{font-size:16px;font-weight:600}
