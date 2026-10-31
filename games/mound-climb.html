@@ -15,9 +15,9 @@
 .up{display:flex;align-items:center;gap:8px;background:#ffffff10;border-radius:10px;padding:8px 10px;margin:6px 0;text-align:left}.ui{flex:1;min-width:0;display:flex;flex-direction:column}.ui b{font-size:15px}.ui .sm{margin:1px 0 4px;font-size:12px}
 .pips{display:flex;gap:3px}.pips i{flex:1;height:6px;border-radius:3px;background:#ffffff26}.pips i.on{background:#3ee0f0}
 .bx button.ub{width:auto;margin:0;padding:8px 10px;font-size:14px;background:#ffd54a;white-space:nowrap}.bx button.ub:disabled{background:#ffffff26;color:#ffffff88}.bx button.alt{background:#ffffff22;color:#fff}.bx button.go{font-size:20px}
-.ped{position:fixed;bottom:max(14px,env(safe-area-inset-bottom));z-index:2;width:92px;height:118px;border-radius:18px;border:0;font:900 15px system-ui,sans-serif;color:#0f1a30;box-shadow:0 6px 0 #0005;display:none;touch-action:none;-webkit-tap-highlight-color:transparent}
-body.playing .ped{display:block}#gas{right:14px;background:linear-gradient(#7cf08a,#2fb94a)}#brk{left:14px;background:linear-gradient(#ff9a8a,#e0453a)}.ped.dn{transform:translateY(5px);box-shadow:0 1px 0 #0005;filter:brightness(1.1)}
-@media(min-width:800px){.ped{width:110px;height:140px}}</style><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#0b1f3a"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"><link rel="icon" href="/favicon.ico" sizes="any"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="MNDSVtech"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="application-name" content="MNDSVtech"></head><body><canvas id="c"></canvas><a id="back" href="/games.html">← Games</a><button class="ped" id="brk" aria-label="Brake">BRAKE<br>◀</button><button class="ped" id="gas" aria-label="Gas">GAS<br>▶</button><div id="ov"><div class="bx" id="bx"></div></div><script>(()=>{
+.ped{pointer-events:none;opacity:.75;position:fixed;bottom:max(14px,env(safe-area-inset-bottom));z-index:2;width:92px;height:118px;border-radius:18px;border:0;font:900 15px system-ui,sans-serif;color:#0f1a30;box-shadow:0 6px 0 #0005;display:none;touch-action:none;-webkit-tap-highlight-color:transparent}
+body.playing .ped{display:flex;align-items:center;justify-content:center;text-align:center}.half{position:fixed;top:30%;bottom:20%;left:50%;width:0;border-left:2px dashed #ffffff40;z-index:1;pointer-events:none;display:none}body.playing .half{display:block}#gas{right:14px;background:linear-gradient(#7cf08a,#2fb94a)}#brk{left:14px;background:linear-gradient(#ff9a8a,#e0453a)}.ped.dn{transform:translateY(5px);box-shadow:0 1px 0 #0005;filter:brightness(1.1)}
+@media(min-width:800px){.ped{width:110px;height:140px}}</style><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#0b1f3a"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"><link rel="icon" href="/favicon.ico" sizes="any"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="MNDSVtech"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="application-name" content="MNDSVtech"></head><body><canvas id="c"></canvas><a id="back" href="/games.html">← Games</a><div class="ped" id="brk" aria-hidden="true">BRAKE<br>◀</div><div class="ped" id="gas" aria-hidden="true">GAS<br>▶</div><div class="half" aria-hidden="true"></div><div id="ov"><div class="bx" id="bx"></div></div><script>(()=>{
 const API=document.querySelector('meta[name=mh-api]')?.content||'';
 const cv=document.getElementById('c');let x=cv.getContext('2d');const ov=document.getElementById('ov'),bx=document.getElementById('bx');
 let W=0,H=0,dpr=1,S=1;function rs(){dpr=Math.min(devicePixelRatio||1,2.5);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;S=Math.max(.62,Math.min(1.35,Math.min(W/600,H/430)))}addEventListener('resize',rs);rs();
@@ -70,13 +70,13 @@ function step(dt){const M=V.M,I=M*(V.w*V.w+V.h*V.h)/12,c=Math.cos(car.a),s=Math.
    const tx=ny,ty=-nx,vt=w.vx*tx+w.vy*ty,slip=vt-w.sp*V.r;let jt=-slip/3;const lim=V.mu*(jn+G*dt*1.2);jt=Math.max(-lim,Math.min(lim,jt));
    w.vx+=jt*tx;w.vy+=jt*ty;w.sp-=jt*2/V.r}
   w.th+=w.sp*dt}
- if(!anyOn){if(thr)car.w+=4.2*dt;if(br)car.w-=4.2*dt}
+ if(!anyOn){if(thr)car.w-=4.2*dt;if(br)car.w+=4.2*dt}
  car.w*=1-.6*dt;car.vx*=1-.02*dt;car.x+=car.vx*dt;if(car.x<120){car.x=120;if(car.vx<0)car.vx=0;for(const w of wh)if(w.vx<0)w.vx*=.5}car.y+=car.vy*dt;car.a+=car.w*dt;
  // body contact
  const hw=V.w/2,hh=V.h/2,cc=Math.cos(car.a),ss=Math.sin(car.a);
  for(const [lx,ly,top] of [[-hw,-hh,0],[hw,-hh,0],[-hw,hh,1],[hw,hh,1],[0,hh+2,1],[-hw,0,0],[hw,0,0]]){const wx=car.x+cc*lx-ss*ly,wy=car.y+ss*lx+cc*ly,g=hAt(wx);
   if(wy<g){if(top&&st==='play'){crash('Smashed it!');return}const pen=g-wy;car.y+=pen;const rx=wx-car.x,ry=wy-car.y;const vpy=car.vy+car.w*rx;if(vpy<0){car.vy-=vpy*.8;car.w*=.7}car.vx*=1-1.5*dt}}
- if(st==='play'){const sp=Math.hypot(car.vx,car.vy);batt-=(1+2.4*Math.max(thr,batt>0?br:0))*dt;if(batt<=0){batt=0;if(sp<12)lowT+=dt;else lowT=0;if(lowT>1.5)over('Battery dead!')}
+ if(st==='play'){const sp=Math.hypot(car.vx,car.vy);batt-=(1+2.4*Math.max(thr,batt>0?br:0))*dt;if(batt<=0){batt=0;over('Battery dead!');return}
   if(Math.cos(car.a)<-.2){upT+=dt;if(upT>2.5)crash('Flipped over!')}else upT=0;
   dist=Math.max(dist,(car.x-200)/PXM);
   for(const o of items)if(!o.got){const r=o.k==='b'?34:26;if(Math.hypot(o.x-car.x,o.y-car.y)<r+V.h/2||wh.some(w=>Math.hypot(o.x-w.x,o.y-w.y)<V.r+14)){o.got=1;o.ft=t;if(o.k==='b')batt=V.cap;else{coinsRun+=o.v}}}}
@@ -86,11 +86,16 @@ function over(m){if(st!=='play')return;st='dead';why=m;deadT=t}
 function sfx(){}
 // ---------- input ----------
 const gb=document.getElementById('gas'),bb=document.getElementById('brk');
-function hold(b,f){const on=e=>{e.preventDefault();f(1);b.classList.add('dn')},off=e=>{f(0);b.classList.remove('dn')};b.addEventListener('pointerdown',on);['pointerup','pointercancel','pointerleave'].forEach(k=>b.addEventListener(k,off))}
-hold(gb,v=>gas=v);hold(bb,v=>brk=v);
+// touch: right half = gas, left half = brake (multi-touch); pedals are just indicators
+const PT=new Map();let kg=0,kb=0;
+function syncT(){let g=0,b=0;for(const v of PT.values())v?g=1:b=1;gas=g||kg;brk=b||kb;gb.classList.toggle('dn',!!gas);bb.classList.toggle('dn',!!brk)}
+addEventListener('pointerdown',e=>{if(st!=='play'||e.target.closest('#ov,#back,a,button:not(.ped)'))return;e.preventDefault();PT.set(e.pointerId,e.clientX>=innerWidth/2?1:0);syncT()},{passive:false});
+addEventListener('pointermove',e=>{if(PT.has(e.pointerId)){PT.set(e.pointerId,e.clientX>=innerWidth/2?1:0);syncT()}});
+['pointerup','pointercancel'].forEach(k=>addEventListener(k,e=>{if(PT.delete(e.pointerId))syncT()}));
+addEventListener('blur',()=>{PT.clear();kg=kb=0;syncT()});
 const K={ArrowRight:'g',KeyD:'g',ArrowUp:'g',KeyW:'g',ArrowLeft:'b',KeyA:'b',ArrowDown:'b',KeyS:'b'};
-addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;const k=K[e.code];if(k){e.preventDefault();k==='g'?gas=1:brk=1}});
-addEventListener('keyup',e=>{const k=K[e.code];if(k){k==='g'?gas=0:brk=0}});
+addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;const k=K[e.code];if(k){e.preventDefault();k==='g'?kg=1:kb=1;syncT()}});
+addEventListener('keyup',e=>{const k=K[e.code];if(k){k==='g'?kg=0:kb=0;syncT()}});
 document.addEventListener('touchmove',e=>{if(!e.target.closest('#ov'))e.preventDefault()},{passive:false});
 // ---------- drawing ----------
 const sx=wx=>(wx-camx)*S+W*.33,sy=wy=>H*.6-(wy-camy)*S;
@@ -166,14 +171,14 @@ function showMenu(){st='menu';reset();ov.classList.remove('hide');document.body.
 function startRun(){runId=null;if(!API)return;fetch(API+'/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({game:'hc'})}).then(r=>r.json()).then(d=>{runId=d.run||null}).catch(()=>{})}
 function table(rows,me){const tb=el('table'),hr=el('tr');['#','Name','Distance'].forEach(h=>hr.append(el('th',h)));tb.append(hr);rows.forEach((r,k)=>{const tr=el('tr');if(me(r))tr.className='me';tr.append(el('td',k+1),el('td',r.name),el('td',fmt(r.score)+' m'));tb.append(tr)});return tb}
 function tabs(d,mk){const w=el('div'),bar=el('div',null,'tabs'),box=el('div');[['Today',d.day,5],['This Week',d.week,5],['All-Time',d.top,10]].forEach(([l,r,n])=>{const b=el('button',l);b.onclick=e=>{e&&e.stopPropagation();[...bar.children].forEach(z=>z.className='');b.className='on';r=r||[];box.replaceChildren(r.length?mk(r.slice(0,n)):el('p','No scores yet - be the first!','emp'))};bar.append(b)});w.append(bar,box);bar.children[1].click();return w}
-function showOver(){document.body.classList.remove('playing');gas=brk=0;const m=Math.floor(dist),nb=m>sv.best;if(nb)sv.best=m;sv.btc+=coinsRun;save();
+function showOver(){document.body.classList.remove('playing');PT.clear();kg=kb=0;gas=brk=0;const m=Math.floor(dist),nb=m>sv.best;if(nb)sv.best=m;sv.btc+=coinsRun;save();
  const lb=el('p',API?'Loading leaderboard…':'','sm');let tb=el('div');const again=el('button','↻ Drive again','go'),gar=el('button','🔧 Garage','alt');
  bx.replaceChildren(el('h2',why),el('p',fmt(m)+' m'+(nb?' · NEW BEST!':''),'big'),el('p','+₿ '+fmt(coinsRun)+' collected · total ₿ '+fmt(sv.btc),'sm'),el('p','Best: '+fmt(sv.best)+' m','sm'),lb,tb,again,gar);ov.classList.remove('hide');
  again.onclick=()=>{ov.classList.add('hide');document.body.classList.add('playing');reset();st='play';startRun()};gar.onclick=showMenu;
  const fill=d=>{const g=tabs(d,a=>table(a,r=>d.ok&&r.name===pname&&r.score===m));tb.replaceWith(g);tb=g};const fail=()=>{lb.textContent='Offline - leaderboard unavailable. Your best: '+fmt(sv.best)+' m'};
  if(!API)return;if(runId&&m>0)fetch(API+'/score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({game:'hc',name:pname,score:m,run:runId})}).then(r=>r.json()).then(d=>{if(!d.top)return fetch(API+'/top?game=hc').then(r=>r.json()).then(t=>{fill(t);lb.textContent='🌎 Global leaderboard · '+(d.error||'')});fill(d);lb.textContent='🌎 Global leaderboard'+(d.ok?' · you are #'+d.rank:'')}).catch(fail);
  else fetch(API+'/top?game=hc').then(r=>r.json()).then(d=>{fill(d);lb.textContent='🌎 Global leaderboard'}).catch(fail);runId=null}
-window.__mc={dbg:()=>[Math.round(car.vx),+car.a.toFixed(2),wh.map(w=>[w.on,+w.sp.toFixed(1)]),+slope(car.x).toFixed(2)],get st(){return st},get batt(){return batt},get dist(){return dist}};
+window.__mc={setBatt:v=>batt=v,get gas(){return gas},get brk(){return brk},dbg:()=>[Math.round(car.vx),+car.a.toFixed(2),wh.map(w=>[w.on,+w.sp.toFixed(1)]),+slope(car.x).toFixed(2)],get st(){return st},get batt(){return batt},get dist(){return dist}};
 reset();showMenu();requestAnimationFrame(loop);
 })();
 </script><script>if("serviceWorker"in navigator){var hadC=!!navigator.serviceWorker.controller,rl=0;navigator.serviceWorker.addEventListener("controllerchange",function(){if(hadC&&!rl){rl=1;location.reload()}});addEventListener("load",function(){navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).then(function(r){r.update()})})}</script></body></html>
