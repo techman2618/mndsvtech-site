@@ -9,7 +9,7 @@
 .bx h2{margin:.1em 0 .3em;color:#3ee0f0;font-size:28px}.bx input{font-size:18px;padding:10px;border-radius:8px;border:2px solid #3ee0f0;width:100%;box-sizing:border-box;text-align:center}
 .bx button{margin-top:12px;font-size:18px;font-weight:800;padding:12px 20px;border:0;border-radius:10px;background:#3ee0f0;color:#0f1a30;width:100%}
 .bx table{width:100%;border-collapse:collapse;margin:8px 0;font-size:15px}.bx td,.bx th{padding:4px 6px;border-bottom:1px solid #ffffff22}.bx td:last-child,.bx th:last-child{text-align:right}.bx td:nth-child(2),.bx th:nth-child(2){text-align:left}
-.bx tr.me{background:#ffd54a;color:#0f1a30;font-weight:800}.big{font-size:22px;font-weight:800;margin:4px 0}.sm{font-size:13px;opacity:.85;margin:6px 0}.bx ul{text-align:left;font-size:13px;padding-left:18px;margin:6px 0}</style></head><body>
+.bx tr.me{background:#ffd54a;color:#0f1a30;font-weight:800}.big{font-size:22px;font-weight:800;margin:4px 0}.sm{font-size:13px;opacity:.85;margin:6px 0}.bx ul{text-align:left;font-size:13px;padding-left:18px;margin:6px 0}</style><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#0b1f3a"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"><link rel="icon" href="/favicon.ico" sizes="any"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="MNDSVtech"></head><body>
 <a id="back" href="../games.html">← Games</a><div id="ov" class="hide"><div class="bx" id="bx"></div></div><canvas id="c" aria-label="Tech Merge game. Move to aim, tap or click to drop."></canvas>
 <script>
 (()=>{const API='https://mound-hopper-scores.mndsvtech.workers.dev';
@@ -110,4 +110,4 @@ function draw(){x.setTransform(dpr,0,0,dpr,0,0);x.fillStyle='#0f1a30';x.fillRect
  fx.forEach(f=>{if(f.k==='p'){x.globalAlpha=Math.max(0,f.t*2);x.fillStyle=f.c;x.fillRect(f.x-3,f.y-3,6,6)}else if(f.k==='txt'){x.globalAlpha=Math.min(1,f.t*2);x.font='900 26px system-ui';{const w=x.measureText(f.s).width;if(w>350)x.font='900 '+Math.floor(26*350/w)+'px system-ui'}x.textAlign='center';x.lineWidth=5;x.strokeStyle='#0f1a30';{const hw=Math.min(175,x.measureText(f.s).width/2+4),cx=Math.max(hw+2,Math.min(VW-hw-2,f.x));x.strokeText(f.s,cx,f.y);x.fillStyle=f.c;x.fillText(f.s,cx,f.y)}}else if(f.k==='ring'){x.globalAlpha=f.t/.6;x.strokeStyle='#ff5a5a';x.lineWidth=6;x.beginPath();x.arc(f.x,f.y,(0.6-f.t)*700,0,7);x.stroke()}x.globalAlpha=1});
  if(st==='play'&&chain>=2&&tnow-lastM<1.3){x.font='bold 14px system-ui';x.textAlign='left';x.fillStyle='#ffd54a';x.fillText('🔥 Chain x'+chain,26,TOP-40)}}
 showName();requestAnimationFrame(frame)})();
-</script></body></html>
+</script><script>if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("/sw.js"));</script></body></html>
