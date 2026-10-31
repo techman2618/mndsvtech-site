@@ -8,3 +8,5 @@ CREATE INDEX IF NOT EXISTS tm_top ON tm_scores(score DESC,created ASC);
 -- ALTER TABLE runs ADD COLUMN game TEXT NOT NULL DEFAULT 'mh';
 CREATE TABLE IF NOT EXISTS downloads(id INTEGER PRIMARY KEY AUTOINCREMENT,platform TEXT NOT NULL,ts INTEGER NOT NULL,h TEXT); -- h = hashed ip+platform, nulled after 1h (dedupe only)
 CREATE INDEX IF NOT EXISTS dl_h ON downloads(h,ts);
+CREATE TABLE IF NOT EXISTS hc_scores(id INTEGER PRIMARY KEY AUTOINCREMENT,name TEXT NOT NULL,score INTEGER NOT NULL,created INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS hc_top ON hc_scores(score DESC,created ASC);
