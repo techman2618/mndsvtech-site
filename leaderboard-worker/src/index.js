@@ -9,7 +9,19 @@ const J=(d,s,h)=>new Response(JSON.stringify(d),{status:s||200,headers:{'Content
 async function limited(env,ip,max,win){const now=Date.now();await env.DB.prepare('DELETE FROM hits WHERE ts<?').bind(now-3600e3).run();const r=await env.DB.prepare('SELECT COUNT(*) c FROM hits WHERE ip=? AND ts>?').bind(ip,now-win).first();if(r.c>=max)return true;await env.DB.prepare('INSERT INTO hits(ip,ts) VALUES(?,?)').bind(ip,now).run();return false}
 const TBL={mh:'scores',tm:'tm_scores'};function gk(v){return v==='tm'?'tm':'mh'}
 async function top(env,g){const {results}=await env.DB.prepare('SELECT name,score,created FROM '+TBL[g||'mh']+' ORDER BY score DESC,created ASC LIMIT 10').all();return results}
-export default{async fetch(req,env){if((req.method==='GET'||req.method==='HEAD')&&new URL(req.url).pathname==='/MNDSVtech.mobileconfig')return new Response(req.method==='HEAD'?null:PROFILE,{headers:{'Content-Type':'application/x-apple-aspen-config','Content-Disposition':'attachment; filename="MNDSVtech.mobileconfig"','Content-Length':String(PROFILE.byteLength),'Cache-Control':'public, max-age=3600'}});const h=cors(req,env),u=new URL(req.url),ip=req.headers.get('CF-Connecting-IP')||'local';
+// Live ghosts: one Durable Object room, WebSockets, batched broadcast ~10x/sec
+export class LiveRoom{constructor(state,env){this.state=state;this.env=env;this.p=new Map();this.timer=null}
+ async fetch(req){const pair=new WebSocketPair(),[c,s]=Object.values(pair);s.accept();const id=crypto.randomUUID().slice(0,8);
+  s.addEventListener('message',e=>{if(typeof e.data!=='string'||e.data.length>200)return;let d;try{d=JSON.parse(e.data)}catch{return}
+   const n=clean(d.n);if(!n||bad(n))return;const y=Math.max(0,Math.min(1,+d.y||0)),sc=Math.max(0,Math.min(MAX_SCORE,d.s|0));
+   this.p.set(id,{ws:s,n,y:Math.round(y*1000)/1000,s:sc,a:d.a?1:0,t:Date.now()});this.tick()});
+  const gone=()=>{this.p.delete(id)};s.addEventListener('close',gone);s.addEventListener('error',gone);
+  this.p.set(id,{ws:s,t:Date.now()});this.tick();return new Response(null,{status:101,webSocket:c})}
+ tick(){if(this.timer)return;this.timer=setInterval(()=>{const now=Date.now();for(const[k,v]of this.p)if(now-v.t>3000){try{v.ws.close(1000,'idle')}catch{}this.p.delete(k)}
+   if(!this.p.size){clearInterval(this.timer);this.timer=null;return}
+   const list=[];for(const[k,v]of this.p)if(v.n&&v.a)list.push({i:k,n:v.n,y:v.y,s:v.s});
+   for(const[k,v]of this.p){const others=list.filter(o=>o.i!==k).slice(0,10);try{v.ws.send(JSON.stringify({c:this.p.size,g:others}))}catch{this.p.delete(k)}}},100)}}
+export default{async fetch(req,env){if(new URL(req.url).pathname==='/live'){const o=req.headers.get('Origin')||'';if(!(env.ALLOWED_ORIGINS||'').split(',').includes(o))return new Response('forbidden',{status:403});if(req.headers.get('Upgrade')!=='websocket')return new Response('expected websocket',{status:426});return env.LIVE.get(env.LIVE.idFromName('mh')).fetch(req)}if((req.method==='GET'||req.method==='HEAD')&&new URL(req.url).pathname==='/MNDSVtech.mobileconfig')return new Response(req.method==='HEAD'?null:PROFILE,{headers:{'Content-Type':'application/x-apple-aspen-config','Content-Disposition':'attachment; filename="MNDSVtech.mobileconfig"','Content-Length':String(PROFILE.byteLength),'Cache-Control':'public, max-age=3600'}});const h=cors(req,env),u=new URL(req.url),ip=req.headers.get('CF-Connecting-IP')||'local';
  if(req.method==='OPTIONS')return new Response(null,{headers:h});
  try{
  if(req.method==='GET'&&u.pathname==='/top')return J({top:await top(env,gk(u.searchParams.get('game')))},200,h);

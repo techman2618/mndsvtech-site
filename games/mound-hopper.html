@@ -32,6 +32,21 @@ function showOver(){const sc=getScores();const e={n:pname||'Player',s:score,t:Da
  const i=nameField(),b=el('button','Play again');bx.append(el('p','Player name','sm'),i,b);ov.classList.remove('hide');
  const go=()=>{const n=clean(i.value);if(n){pname=n;try{localStorage.setItem('moundHopperName',n)}catch(_){}}i.blur();ov.classList.add('hide');reset();st='play';p.v=FLAP;startRun();};b.onclick=go;i.onkeydown=k=>{k.stopPropagation();if(k.key==='Enter')go()};}
 const API=document.querySelector('meta[name=mh-api]')?.content||'';let runId=null;
+
+// live ghosts (silently off when offline)
+const GH=new Map();let liveN=0,ws=null,wsT=1000;
+function liveConnect(){if(!API||!('WebSocket'in window)||navigator.onLine===false){setTimeout(liveConnect,5000);return}
+ try{ws=new WebSocket(API.replace(/^http/,'ws')+'/live')}catch(e){ws=null;setTimeout(liveConnect,wsT);return}
+ ws.onopen=()=>{wsT=1000};ws.onmessage=e=>{let d;try{d=JSON.parse(e.data)}catch(_){return}liveN=d.c|0;const now=performance.now(),seen=new Set();
+  (d.g||[]).slice(0,10).forEach(o=>{seen.add(o.i);const g=GH.get(o.i);if(g){g.ty=o.y;g.s=o.s;g.n=o.n;g.t=now}else GH.set(o.i,{n:o.n,s:o.s,ty:o.y,y:o.y,t:now,k:GH.size})});
+  for(const k of GH.keys())if(!seen.has(k))GH.delete(k)};
+ ws.onclose=()=>{ws=null;GH.clear();liveN=0;setTimeout(liveConnect,wsT);wsT=Math.min(wsT*2,30000)};ws.onerror=()=>{try{ws.close()}catch(_){}}}
+setInterval(()=>{if(ws&&ws.readyState===1&&p&&pname)ws.send(JSON.stringify({n:pname,y:p.y/H,s:score|0,a:st==='play'||st==='crash'}));
+ const now=performance.now();for(const[k,g]of GH)if(now-g.t>3000)GH.delete(k)},100);
+function ghosts(dt){let i=0;for(const g of GH.values()){g.y+=(g.ty-g.y)*Math.min(1,dt*10);const gx=(p?p.x:120)-34+((i*23)%70),gy=Math.max(34,g.y*H);i++;
+ x.save();x.globalAlpha=.33;x.translate(gx,gy);x.fillStyle='#e8f4ff';rr(-13,-21,26,42,6);x.fillStyle='#9fd8ff';rr(-10,-16,20,30,3);x.fillStyle='#fff';x.beginPath();x.ellipse(-19,-2,9,4,-.5,0,7);x.ellipse(19,-2,9,4,.5,0,7);x.fill();
+ x.globalAlpha=.75;x.font='700 12px system-ui,sans-serif';x.textAlign='center';x.lineWidth=3;x.strokeStyle='#1d2b4a';const l=g.n+' · '+g.s;x.strokeText(l,0,-27);x.fillStyle='#fff';x.fillText(l,0,-27);x.restore();}}
+addEventListener('online',()=>{if(!ws)liveConnect()});liveConnect();
 function startRun(){runId=null;if(!API)return;fetch(API+'/start',{method:'POST'}).then(r=>r.json()).then(d=>{runId=d.run||null}).catch(()=>{})}
 function table(rows,isMe){const tb=el('table'),hr=el('tr');['#','Name','Score'].forEach(h=>hr.append(el('th',h)));tb.append(hr);rows.slice(0,10).forEach((x,k)=>{const tr=el('tr');if(isMe(x))tr.className='me';tr.append(el('td',k+1),el('td',x.n),el('td',x.s));tb.append(tr)});return tb}
 let cr=null,rest=0,spd=190,lvl=0,flashT=-9;
@@ -92,11 +107,12 @@ if(cr){x.save();x.beginPath();x.rect(-w/2+3,-h/2+5,w-6,h-12);x.clip();x.fillStyl
 function rr(a,b,w,h,r){x.beginPath();x.roundRect?x.roundRect(a,b,w,h,r):x.rect(a,b,w,h);x.fill();}
 function txt(s,y,sz,c='#fff'){x.font=`800 ${sz}px system-ui,sans-serif`;x.textAlign='center';x.lineWidth=sz/6;x.strokeStyle='#1d2b4a';x.strokeText(s,W/2,y);x.fillStyle=c;x.fillText(s,W/2,y);}
 function panel(y,h){x.fillStyle='#1d2b4add';const w=Math.min(W-30,340);x.beginPath();x.roundRect?x.roundRect(W/2-w/2,y,w,h,16):x.rect(W/2-w/2,y,w,h);x.fill();}
-function draw(){x.setTransform(dpr*S,0,0,dpr*S,0,0);sky();if(st!=='start'&&obs)obs.forEach(drawObs);ground();if(p)phone();
+function draw(){x.setTransform(dpr*S,0,0,dpr*S,0,0);sky();if(st!=='start'&&obs)obs.forEach(drawObs);ground();ghosts(gdt);if(p)phone();
+ if(liveN>1){x.font='700 13px system-ui,sans-serif';x.textAlign='left';x.lineWidth=3;x.strokeStyle='#1d2b4a';const lt='🟢 '+liveN+' players live';x.strokeText(lt,12,H-GROUND+34);x.fillStyle='#fff';x.fillText(lt,12,H-GROUND+34);}
  if(st==='play'){txt(score,70,48);if(t-flashT<1.3){x.globalAlpha=Math.min(1,(1.3-(t-flashT))*2);txt('Speed up!',H*0.3,40,'#ffd54a');txt('Level '+(lvl+1)+' · '+Math.round(Math.pow(1.05,lvl)*100)+'% speed',H*0.3+36,18);x.globalAlpha=1;}}
  if(st==='start'){panel(H*0.12,150);txt('Mound Hopper',H*0.12+50,36,'#3ee0f0');txt('Fly over Moundsville!',H*0.12+88,18);txt(pname?'Player: '+pname+' · Best: '+best:'Best: '+best,H*0.12+122,18);txt('Tap, click or press Space',H*0.66,20);txt('to start',H*0.66+28,20);}
  if(st==='crash')txt(score,70,48);}
-let last=performance.now();p={x:Math.min(W*0.3,160),y:H*0.42,v:0,r:0};
-function loop(n){let dt=(n-last)/1000;last=n;if(dt>0.05)dt=0.05;if(dt>0)upd(dt);draw();requestAnimationFrame(loop);}requestAnimationFrame(loop);showName();
+let gdt=0,last=performance.now();p={x:Math.min(W*0.3,160),y:H*0.42,v:0,r:0};
+function loop(n){let dt=(n-last)/1000;last=n;if(dt>0.05)dt=0.05;if(dt>0)upd(dt);gdt=dt;draw();requestAnimationFrame(loop);}requestAnimationFrame(loop);showName();
 })();
 </script><script>if("serviceWorker"in navigator){var hadC=!!navigator.serviceWorker.controller,rl=0;navigator.serviceWorker.addEventListener("controllerchange",function(){if(hadC&&!rl){rl=1;location.reload()}});addEventListener("load",function(){navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).then(function(r){r.update()})})}</script></body></html>

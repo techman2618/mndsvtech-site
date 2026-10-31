@@ -14,3 +14,11 @@ ALLOWED_ORIGINS = "https://www.mndsvtech.com,https://mndsvtech.com,http://localh
 type = "Data"
 globs = ["**/*.mobileconfig"]
 fallthrough = true
+
+[[durable_objects.bindings]]
+name = "LIVE"
+class_name = "LiveRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["LiveRoom"]
