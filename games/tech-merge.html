@@ -2,7 +2,7 @@
 <title>Tech Merge | MNDSVtech Games</title><meta name="description" content="Tech Merge: drop and merge tech from a floppy disk all the way up to a quantum computer. A free game by Collins Tech LLC, Moundsville WV.">
 <link rel="canonical" href="https://www.mndsvtech.com/games/tech-merge.html"><link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <style>html,body{margin:0;height:100%;overflow:hidden;background:#0f1a30;overscroll-behavior:none;touch-action:none;-webkit-user-select:none;user-select:none;font-family:system-ui,sans-serif}
-#c{display:block;width:100vw;height:100vh;height:100dvh;touch-action:none}
+#c{display:block;width:100vw;height:100vh;height:100dvh;touch-action:none}#sa{position:fixed;left:0;bottom:0;width:1px;height:env(safe-area-inset-bottom,0px);visibility:hidden;pointer-events:none}
 #back{position:fixed;top:max(8px,env(safe-area-inset-top));left:8px;z-index:2;background:#1d2b4acc;color:#fff;text-decoration:none;padding:8px 12px;border-radius:8px;font-size:14px}
 #ov{position:fixed;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;background:#0f1a30aa;padding:16px;box-sizing:border-box;touch-action:auto}#ov.hide{display:none}
 .bx{background:#1d2b4a;color:#fff;border-radius:16px;padding:20px;width:100%;max-width:380px;max-height:92dvh;overflow:auto;text-align:center;box-shadow:0 8px 30px #0008}
@@ -10,12 +10,14 @@
 .bx button{margin-top:12px;font-size:18px;font-weight:800;padding:12px 20px;border:0;border-radius:10px;background:#3ee0f0;color:#0f1a30;width:100%}
 .bx table{width:100%;border-collapse:collapse;margin:8px 0;font-size:15px}.bx td,.bx th{padding:4px 6px;border-bottom:1px solid #ffffff22}.bx td:last-child,.bx th:last-child{text-align:right}.bx td:nth-child(2),.bx th:nth-child(2){text-align:left}
 .bx tr.me{background:#ffd54a;color:#0f1a30;font-weight:800}.big{font-size:22px;font-weight:800;margin:4px 0}.sm{font-size:13px;opacity:.85;margin:6px 0}.bx ul{text-align:left;font-size:13px;padding-left:18px;margin:6px 0}.tabs{display:flex;gap:4px;margin:6px 0}.bx .tabs button{flex:1;margin:0;padding:7px 2px;font-size:13px;width:auto;background:#ffffff22;color:#fff;border-radius:8px;white-space:nowrap}.bx .tabs button.on{background:#3ee0f0;color:#0f1a30}.emp{font-size:13px;opacity:.7;margin:10px 0}</style><link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#0b1f3a"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"><link rel="icon" href="/favicon.ico" sizes="any"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="MNDSVtech"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="application-name" content="MNDSVtech"></head><body>
-<a id="back" href="../games.html">← Games</a><div id="ov" class="hide"><div class="bx" id="bx"></div></div><canvas id="c" aria-label="Tech Merge game. Move to aim, tap or click to drop."></canvas>
+<a id="back" href="../games.html">← Games</a><div id="ov" class="hide"><div class="bx" id="bx"></div></div><div id="sa"></div><canvas id="c" aria-label="Tech Merge game. Move to aim, tap or click to drop."></canvas>
 <script>
 (()=>{const API='https://mound-hopper-scores.mndsvtech.workers.dev';
 const cv=document.getElementById('c'),x=cv.getContext('2d');const VW=400,VH=720;let S=1,OX=0,OY=0,dpr=1;
-function rs(){dpr=Math.min(devicePixelRatio||1,3);cv.width=Math.round(innerWidth*dpr);cv.height=Math.round(innerHeight*dpr);S=Math.min(innerWidth/VW,innerHeight/VH);OX=(innerWidth-VW*S)/2;OY=(innerHeight-VH*S)/2}
-addEventListener('resize',rs);rs();
+const sa=document.getElementById('sa');
+/* keep the board and power buttons above phone nav bars: reserve the bottom safe-area inset plus a margin */
+function rs(){dpr=Math.min(devicePixelRatio||1,3);const H=Math.min(innerHeight,window.visualViewport?visualViewport.height:innerHeight);cv.width=Math.round(innerWidth*dpr);cv.height=Math.round(innerHeight*dpr);const ins=sa.getBoundingClientRect().height||0,pad=Math.max(ins,0)+Math.max(10,H*.02),avail=H-pad;S=Math.min(innerWidth/VW,avail/VH);OX=(innerWidth-VW*S)/2;OY=Math.max(0,(avail-VH*S)/2)}
+addEventListener('resize',rs);addEventListener('orientationchange',()=>setTimeout(rs,250));if(window.visualViewport)visualViewport.addEventListener('resize',rs);rs();
 const NAMES=['Floppy Disk','CD','Hard Drive','SSD','NVMe M.2','RAM Stick','CPU','GPU','Gaming PC','Server Rack','Quantum Computer'];
 const R=[17,22,28,34,41,49,57,66,76,87,99],COL=['#2f6fd6','#c9d3e0','#7b8794','#4a4f5a','#1f8a4c','#2a9d5c','#d9a441','#333a46','#7b3fe4','#3a4a5e','#e8c35a'];
 const PTS=[0,2,4,8,16,32,64,128,256,512,1024],QBONUS=2000;
@@ -57,7 +59,8 @@ function phys(dt){const N=6,h=dt/N;for(let s=0;s<N;s++){for(const b of bodies){b
 /* ---------- power-ups ---------- */
 const PW=[{k:'mag',n:'Magnet Wipe',e:'🧲'},{k:'oc',n:'Overclock',e:'⚡'},{k:'df',n:'Defrag',e:'🧩'}];
 function pwFrac(k){return k==='mag'?mag/MAG_N:k==='oc'?oc/OC_N:dfAcc/DF_N}
-function pwRect(i){return{x:22+i*124,y:654,w:108,h:56}}
+function pwRect(i){return{x:22+i*121,y:646,w:114,h:66}}
+function pwHit(p){for(let i=0;i<3;i++){const r=pwRect(i);if(p.x>=r.x-4&&p.x<=r.x+r.w+4&&p.y>=r.y-6&&p.y<=r.y+r.h+8)return i}return -1}
 function usePw(k){if(pwFrac(k)<1||st!=='play')return;
  if(k==='mag'){if(!bodies.length)return;const m=Math.min(...bodies.map(b=>b.t));const gone=bodies.filter(b=>b.t===m);bodies=bodies.filter(b=>b.t!==m);gone.forEach(b=>{for(let i=0;i<6;i++)fx.push({k:'p',x:b.x,y:b.y,vx:(Math.random()-.5)*300,vy:-Math.random()*300,t:.6,c:'#ff5a5a'})});fx.push({k:'txt',s:'DEGAUSSED '+gone.length+' × '+NAMES[m]+'!',x:VW/2,y:300,t:1.4,c:'#ff7a7a'});fx.push({k:'ring',x:VW/2,y:400,t:.6});mag=0;shake=.25}
  if(k==='oc'){ocArm=true;fx.push({k:'txt',s:'TAP A PART TO OVERCLOCK',x:VW/2,y:300,t:1.6,c:'#ffd54a'})}
@@ -67,11 +70,14 @@ function usePw(k){if(pwFrac(k)<1||st!=='play')return;
 /* ---------- input ---------- */
 function vpt(e){return{x:(e.clientX-OX)/S,y:(e.clientY-OY)/S}}
 cv.addEventListener('pointermove',e=>{if(st!=='play')return;aimX=vpt(e).x},{passive:true});
+/* taps that hit a power button or pick an Overclock target are consumed: their pointerup must never drop a part */
+const eaten=new Set();
 cv.addEventListener('pointerdown',e=>{e.preventDefault();if(st!=='play')return;const p=vpt(e);
- for(let i=0;i<3;i++){const r=pwRect(i);if(p.x>=r.x&&p.x<=r.x+r.w&&p.y>=r.y&&p.y<=r.y+r.h){usePw(PW[i].k);return}}
- if(ocArm){const b=bodies.find(b=>Math.hypot(b.x-p.x,b.y-p.y)<b.r);if(b&&b.t<10){const nb={...b,id:nid++,t:b.t+1,r:R[b.t+1],wob:1};bodies[bodies.indexOf(b)]=nb;ocArm=false;oc=0;fx.push({k:'txt',s:'OVERCLOCKED → '+NAMES[nb.t],x:VW/2,y:300,t:1.4,c:'#ffd54a'});for(let i=0;i<14;i++)fx.push({k:'p',x:b.x,y:b.y,vx:(Math.random()-.5)*360,vy:(Math.random()-.5)*360,t:.5,c:'#ffd54a'})}return}
+ const hi=pwHit(p);if(hi>=0){eaten.add(e.pointerId);usePw(PW[hi].k);return}
+ if(ocArm){eaten.add(e.pointerId);const b=bodies.find(b=>Math.hypot(b.x-p.x,b.y-p.y)<b.r);if(b&&b.t<10){const nb={...b,id:nid++,t:b.t+1,r:R[b.t+1],wob:1};bodies[bodies.indexOf(b)]=nb;ocArm=false;oc=0;fx.push({k:'txt',s:'OVERCLOCKED → '+NAMES[nb.t],x:VW/2,y:300,t:1.4,c:'#ffd54a'});for(let i=0;i<14;i++)fx.push({k:'p',x:b.x,y:b.y,vx:(Math.random()-.5)*360,vy:(Math.random()-.5)*360,t:.5,c:'#ffd54a'})}return}
  aimX=p.x;if(e.pointerType==='mouse')drop()},{passive:false});
-cv.addEventListener('pointerup',e=>{if(st==='play'&&e.pointerType!=='mouse'&&!ocArm){const p=vpt(e);if(p.y<650)drop()}});
+cv.addEventListener('pointerup',e=>{const ate=eaten.delete(e.pointerId);if(ate||st!=='play'||e.pointerType==='mouse'||ocArm)return;const p=vpt(e);if(pwHit(p)<0&&p.y<640)drop()});
+cv.addEventListener('pointercancel',e=>{eaten.delete(e.pointerId)});
 addEventListener('keydown',e=>{if(e.target&&e.target.tagName==='INPUT'||st!=='play')return;if(e.code==='ArrowLeft')aimX-=20;if(e.code==='ArrowRight')aimX+=20;if(e.code==='Space'||e.code==='ArrowDown'){e.preventDefault();drop()}if(e.key==='1')usePw('mag');if(e.key==='2')usePw('oc');if(e.key==='3')usePw('df')});
 function drop(){if(cool>0)return;const r=R[cur],px=Math.max(L+r,Math.min(RT-r,aimX));add(cur,px,TOP-20-r*.2).vy=80;cur=nxt;nxt=rnd();cool=.55}
 /* ---------- overlays ---------- */
@@ -107,7 +113,7 @@ function draw(){x.setTransform(dpr,0,0,dpr,0,0);x.fillStyle='#0f1a30';x.fillRect
  if(st==='play'){const r=R[cur],px=Math.max(L+r,Math.min(RT-r,aimX));x.strokeStyle='#ffffff30';x.setLineDash([4,6]);x.beginPath();x.moveTo(px,TOP-20);x.lineTo(px,BOT);x.stroke();x.setLineDash([]);drawBody({x:px,y:TOP-20-r*.2-(r>30?0:0),r,t:cur},cool>0?.4:1);x.fillStyle='#9fb3d1';x.font='11px system-ui';x.textAlign='center';x.fillText(NAMES[cur],px,TOP-24-r*1.2-4);x.textAlign='left'}
  bodies.forEach(b=>drawBody(b));if(ocArm){bodies.forEach(b=>{if(b.t<10){x.strokeStyle='rgba(255,213,74,'+(.5+.5*Math.sin(tnow*10))+')';x.lineWidth=3;x.beginPath();x.arc(b.x,b.y,b.r+3,0,7);x.stroke()}})}
  PW.forEach((p,i)=>{const r=pwRect(i),f=pwFrac(p.k),ready=f>=1;rr(r.x,r.y,r.w,r.h,12);x.fillStyle=ready?'#24406e':'#1a2742';x.fill();x.save();x.clip();x.fillStyle=ready?'#3ee0f055':'#3ee0f022';x.fillRect(r.x,r.y+r.h*(1-f),r.w,r.h*f);x.restore();rr(r.x,r.y,r.w,r.h,12);x.lineWidth=ready?3:1.5;x.strokeStyle=ready?'hsl('+(tnow*200%360)+',90%,65%)':'#3ee0f055';x.stroke();
-  x.textAlign='center';x.font='22px system-ui';x.fillText(p.e,r.x+r.w/2,r.y+26);x.font='bold 11px system-ui';x.fillStyle='#fff';x.fillText(p.n,r.x+r.w/2,r.y+42);x.font='10px system-ui';x.fillStyle=ready?'#ffd54a':'#9fb3d1';x.fillText(ready?(p.k==='oc'&&ocArm?'PICK A PART':'TAP!'):Math.floor(f*100)+'%',r.x+r.w/2,r.y+53)});
+  x.textAlign='center';x.font='24px system-ui';x.fillText(p.e,r.x+r.w/2,r.y+29);x.font='bold 12px system-ui';x.fillStyle='#fff';x.fillText(p.n,r.x+r.w/2,r.y+47);x.font='bold 11px system-ui';x.fillStyle=ready?'#ffd54a':'#9fb3d1';x.fillText(ready?(p.k==='oc'&&ocArm?'PICK A PART':'TAP!'):Math.floor(f*100)+'%',r.x+r.w/2,r.y+60)});
  fx.forEach(f=>{if(f.k==='p'){x.globalAlpha=Math.max(0,f.t*2);x.fillStyle=f.c;x.fillRect(f.x-3,f.y-3,6,6)}else if(f.k==='txt'){x.globalAlpha=Math.min(1,f.t*2);x.font='900 26px system-ui';{const w=x.measureText(f.s).width;if(w>350)x.font='900 '+Math.floor(26*350/w)+'px system-ui'}x.textAlign='center';x.lineWidth=5;x.strokeStyle='#0f1a30';{const hw=Math.min(175,x.measureText(f.s).width/2+4),cx=Math.max(hw+2,Math.min(VW-hw-2,f.x));x.strokeText(f.s,cx,f.y);x.fillStyle=f.c;x.fillText(f.s,cx,f.y)}}else if(f.k==='ring'){x.globalAlpha=f.t/.6;x.strokeStyle='#ff5a5a';x.lineWidth=6;x.beginPath();x.arc(f.x,f.y,(0.6-f.t)*700,0,7);x.stroke()}x.globalAlpha=1});
  if(st==='play'&&chain>=2&&tnow-lastM<1.3){x.font='bold 14px system-ui';x.textAlign='left';x.fillStyle='#ffd54a';x.fillText('🔥 Chain x'+chain,26,TOP-40)}}
 showName();requestAnimationFrame(frame)})();
