@@ -14,7 +14,7 @@ const API=document.querySelector('meta[name=mh-api]')?.content||'';
 const cv=document.getElementById('c'),x=cv.getContext('2d'),ov=document.getElementById('ov'),bx=document.getElementById('bx');
 let W,H,dpr;function rs(){dpr=Math.min(devicePixelRatio||1,2.5);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr}addEventListener('resize',rs);rs();
 const el=(t,s,c)=>{const e=document.createElement(t);if(s!=null)e.textContent=s;if(c)e.className=c;return e};
-function clean(n){return String(n||'').replace(/[\u0000-\u001f<>&"'`]/g,'').replace(/\s+/g,' ').trim().slice(0,12)}
+function clean(n){return String(n||'').replace(/[\u0000-\u001f<>&"'`]/g,'').replace(/\s+/g,' ').trim().slice(0,15)}
 const fmt=n=>Math.floor(n).toLocaleString('en-US');
 let pname=clean(localStorage.getItem('moundGliderName')||localStorage.getItem('moundHopperName')||'');let best=+(localStorage.getItem('moundGliderBest')||0);
 // ---------- terrain (islands of cosine hills) ----------
@@ -107,7 +107,7 @@ function loop(n){let d=(n-last)/1000;last=n;if(d>.05)d=.05;t+=d;
 // ---------- UI ----------
 function table(rows,me){const tb=el('table'),hr=el('tr');['#','Name','Score'].forEach(h=>hr.append(el('th',h)));tb.append(hr);rows.forEach((r,k)=>{const tr=el('tr');if(me(r))tr.className='me';tr.append(el('td',k+1),el('td',r.name),el('td',fmt(r.score)));tb.append(tr)});return tb}
 function tabs(d,mk){const w=el('div'),bar=el('div',null,'tabs'),box=el('div');[['Today',d.day,5],['This Week',d.week,5],['All-Time',d.top,10]].forEach(([l,r,n])=>{const bt=el('button',l);bt.onclick=e=>{e&&e.stopPropagation();[...bar.children].forEach(z=>z.className='');bt.className='on';r=r||[];box.replaceChildren(r.length?mk(r.slice(0,n)):el('p','No scores yet - be the first!','emp'))};bar.append(bt)});w.append(bar,box);bar.children[1].click();return w}
-function nameField(){const i=el('input');i.maxLength=12;i.value=pname;i.placeholder='Your name';i.id='nm';i.autocomplete='nickname';return i}
+function nameField(){const i=el('input');i.maxLength=15;i.value=pname;i.placeholder='Your name';i.id='nm';i.autocomplete='nickname';return i}
 function showName(){st='name';const i=nameField(),bt=el('button','▶ Fly!');bx.replaceChildren(el('h2','Mound Glider'),el('p','Glide over the hills of Moundsville before the sun sets.','sm'),el('ul'),i,bt);
  const ul=bx.querySelector('ul');['Hold anywhere (or Space) to dive','Release to glide off hilltops','Land on downhills = Great slide → speed','3 perfect slides in a row = 🔥 Fever','Finish an island for extra daylight ☀️'].forEach(s=>ul.append(el('li',s)));ov.classList.remove('hide');
  const g=()=>{const n=clean(i.value);if(!n){i.focus();return}pname=n;try{localStorage.setItem('moundGliderName',n)}catch(_){}i.blur();ov.classList.add('hide');reset();st='play';startRun()};bt.onclick=g;i.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')g()}}

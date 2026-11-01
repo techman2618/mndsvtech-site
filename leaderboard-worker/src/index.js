@@ -2,7 +2,7 @@ import PROFILE from './MNDSVtech.mobileconfig';
 // Mound Hopper global leaderboard - Cloudflare Worker + D1 (free tier)
 const BAD=['fuck','shit','bitch','cunt','nigg','fag','dick','cock','pussy','whore','slut','rape','nazi','penis','vagina','asshole','retard','kkk'];
 const TW_MAX=10000000,TW_PPS=3000,TW_FREE=2000,HC_MAX=200000,HC_MPS=85,HC_FREE=60,MAX_SCORE=10000, SEC_PER_POINT=1.0, RUN_TTL=6*3600*1000, TM_MAX=500000, TM_PPS=150, TM_FREE=500;
-function clean(n){return String(n||'').normalize('NFKC').replace(/[^\p{L}\p{N} ._\-!]/gu,'').replace(/\s+/g,' ').trim().slice(0,12)}
+function clean(n){return String(n||'').normalize('NFKC').replace(/[^\p{L}\p{N} ._\-!]/gu,'').replace(/\s+/g,' ').trim().slice(0,15)}
 function bad(n){const s=n.toLowerCase().replace(/[^a-z0-9]/g,'').replace(/0/g,'o').replace(/1/g,'i').replace(/3/g,'e').replace(/4/g,'a').replace(/5/g,'s').replace(/\$/g,'s');return BAD.some(w=>s.includes(w))}
 function cors(req,env){const o=req.headers.get('Origin')||'';const ok=(env.ALLOWED_ORIGINS||'').split(',').includes(o);return{'Access-Control-Allow-Origin':ok?o:'https://www.mndsvtech.com','Access-Control-Allow-Methods':'GET,POST,OPTIONS','Access-Control-Allow-Headers':'Content-Type','Vary':'Origin'}}
 const J=(d,s,h)=>new Response(JSON.stringify(d),{status:s||200,headers:{'Content-Type':'application/json','Cache-Control':'no-store',...h}});

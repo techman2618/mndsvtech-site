@@ -17,11 +17,11 @@ function rs(){dpr=Math.min(window.devicePixelRatio||1,3);const w=innerWidth,h=in
 addEventListener('resize',rs);rs();
 const G=1500,FLAP=-460,SPD=190,GAP=175,SPACE=260,GROUND=70,PR=17;
 const ov=document.getElementById('ov'),bx=document.getElementById('bx');
-function clean(n){return String(n||'').replace(/[\u0000-\u001f<>&"'`]/g,'').replace(/\s+/g,' ').trim().slice(0,12)}
+function clean(n){return String(n||'').replace(/[\u0000-\u001f<>&"'`]/g,'').replace(/\s+/g,' ').trim().slice(0,15)}
 let pname=clean(localStorage.getItem('moundHopperName')||'');
 function getScores(){try{const a=JSON.parse(localStorage.getItem('moundHopperScores')||'[]');return Array.isArray(a)?a.filter(e=>e&&typeof e.s==='number').map(e=>({n:clean(e.n)||'Player',s:e.s|0,t:+e.t||0})):[]}catch(e){return[]}}
 function el(tag,txt,cls){const e=document.createElement(tag);if(txt!=null)e.textContent=txt;if(cls)e.className=cls;return e}
-function nameField(){const i=el('input');i.maxLength=12;i.value=pname;i.placeholder='Your name';i.autocomplete='nickname';i.setAttribute('enterkeyhint','go');i.id='nm';return i}
+function nameField(){const i=el('input');i.maxLength=15;i.value=pname;i.placeholder='Your name';i.autocomplete='nickname';i.setAttribute('enterkeyhint','go');i.id='nm';return i}
 function showName(){st='name';bx.replaceChildren(el('h2','Mound Hopper'),el('p','Enter your name for the high score list','sm'));const i=nameField(),b=el('button','Start');bx.append(i,b);ov.classList.remove('hide');
  const go=()=>{const n=clean(i.value);if(!n){i.focus();return}pname=n;try{localStorage.setItem('moundHopperName',n)}catch(e){}i.blur();ov.classList.add('hide');st='start';};b.onclick=go;i.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')go()};}
 function showOver(){const sc=getScores();const e={n:pname||'Player',s:score,t:Date.now()};sc.push(e);sc.sort((a,b)=>b.s-a.s||a.t-b.t);const top=sc.slice(0,50);try{localStorage.setItem('moundHopperScores',JSON.stringify(top))}catch(_){}

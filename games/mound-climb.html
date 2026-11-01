@@ -22,7 +22,7 @@ const API=document.querySelector('meta[name=mh-api]')?.content||'';
 const cv=document.getElementById('c');let x=cv.getContext('2d');const ov=document.getElementById('ov'),bx=document.getElementById('bx');
 let W=0,H=0,dpr=1,S=1;function rs(){dpr=Math.min(devicePixelRatio||1,2.5);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;S=Math.max(.62,Math.min(1.35,Math.min(W/600,H/430)))}addEventListener('resize',rs);rs();
 const el=(t,s,c)=>{const e=document.createElement(t);if(s!=null)e.textContent=s;if(c)e.className=c;return e};
-function clean(n){return String(n||'').replace(/[\u0000-\u001f<>&"'`]/g,'').replace(/\s+/g,' ').trim().slice(0,12)}
+function clean(n){return String(n||'').replace(/[\u0000-\u001f<>&"'`]/g,'').replace(/\s+/g,' ').trim().slice(0,15)}
 const fmt=n=>Math.floor(n).toLocaleString('en-US');
 // ---------- save ----------
 const KEY='moundClimb';let sv={btc:0,up:{spd:0,sus:0,tir:0},own:{phone:1,scooter:0,quad:0,utv:0,modely:0,models:0,cyber:0},sel:'phone',best:0,lv:1,lvOwn:{1:1,2:0,3:0,4:0,5:0},best2:0};
@@ -282,7 +282,7 @@ function lvPrev(k,locked){const c=document.createElement('canvas'),w=150,h=78;c.
  if(k===5){g.fillStyle='#05060c';g.fillRect(0,0,w,h);g.fillStyle='#fff';for(let i=0;i<25;i++)g.fillRect((i*37)%w,(i*23)%50,1.5,1.5);g.fillStyle='#2f6fd0';g.beginPath();g.arc(118,18,12,0,7);g.fill();g.fillStyle='#4caf50';g.beginPath();g.arc(114,16,5,0,7);g.fill();g.fillStyle='#9a9aa0';g.beginPath();g.moveTo(0,h);g.lineTo(0,58);g.quadraticCurveTo(75,50,w,60);g.lineTo(w,h);g.fill();g.fillStyle='#d8dce0';g.fillRect(30,14,10,40);g.beginPath();g.moveTo(30,14);g.quadraticCurveTo(35,4,40,14);g.fill()}
  if(locked){g.fillStyle='#000000c8';g.fillRect(0,0,w,h);g.font='26px system-ui';g.textAlign='center';g.textBaseline='middle';g.fillText('🔒',w/2,h/2)}return c}
 function showMenu(){st='menu';reset();ov.classList.remove('hide');document.body.classList.remove('playing');
- const i=el('input');i.maxLength=12;i.value=pname;i.placeholder='Your name';i.id='nm';i.autocomplete='nickname';
+ const i=el('input');i.maxLength=15;i.value=pname;i.placeholder='Your name';i.id='nm';i.autocomplete='nickname';
  const vs=el('div',null,'vs g2');for(const k of VORD){const own=sv.own[k],card=el('div',null,'vc'+(sv.sel===k?' sel':'')+(own?'':' lock'));card.append(preview(k,!own),el('b',own?VEH[k].name:'??? Locked'));
   if(own){card.append(el('span',sv.sel===k?'✔ Selected':'Tap to drive','sm'));card.onclick=()=>{sv.sel=k;save();showMenu()}}
   else{const pr=VEH[k].price,b=el('button','🔒 ₿ '+fmt(pr),'ub');b.disabled=sv.btc<pr;b.onclick=e=>{e.stopPropagation();if(sv.btc<pr)return;sv.btc-=pr;sv.own[k]=1;sv.upv[k]={spd:0,sus:0,tir:0};sv.sel=k;save();showMenu()};card.append(b)}vs.append(card)}
