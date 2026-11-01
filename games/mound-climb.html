@@ -48,7 +48,7 @@ const VEH={phone:{name:'Cell Phone',w:84,h:34,r:15,ax:30,ay:-21,cap:100,eng:1,sp
 for(const k in VEH){VEH[k].ay0=VEH[k].ay;VEH[k].r0=VEH[k].r}
 const VORD=['phone','scooter','quad','utv','modely','models','cyber'];
 const LVS=[[1,'Moundsville Hills',0,'Rolling WV hills'],[2,'The Penitentiary',10000,'Prison cell blocks'],[3,'The Avenue',20000,'Flat 4 lanes'],[4,'Coal Mine',50000,'Floor & roof'],[5,'The Moon',100000,'Starship · low gravity']];
-const CM={1:1,2:2,3:1.5,4:1,5:2.5};const bkey=l=>l===1?'best':l===2?'best2':'best'+l;
+const CM={1:1,2:2,3:1.5,4:2.5,5:3};const bkey=l=>l===1?'best':l===2?'best2':'best'+l;
 // ---------- terrain ----------
 const PXM=20,SEG=40;let pts,mounds,seedR,LV=1,ph=0,padY=null,distOff=0,ship=null,launchT=0,airT=0,airB=0,pops=[];const PADX=200+110*20;
 function TK(){return LV===5?(ph?'moon':'hills'):['','hills','prison','avenue','mine'][LV]}
@@ -79,7 +79,7 @@ function spawn(){if(st==='launch')return;const ahead=car.x+1600,tk=TK(),padCut=L
   if(m&&nextMound<padCut-500)mounds.push(m);nextMound+=gap*PXM}
  while(LV===4&&nextCoal<ahead){const cx=nextCoal;nextCoal+=1000*PXM;items.push({k:'coal',x:cx,y:hAt(cx)+30})}
  while(nextBolt<ahead){if(nextBolt<padCut)items.push({k:'b',x:nextBolt,y:hAt(nextBolt)+34});const m=nextBolt/PXM;nextBolt+=(240+m*.1+rnd()*80)*PXM}
- while(nextCoin<ahead){const m=distOff+(nextCoin-200)/PXM,v=LV===4?5:Math.round(5*(1+Math.floor(m/250))*CM[LV]),n=4+Math.floor(rnd()*3);if(nextCoin<padCut)for(let i=0;i<n;i++){const xx=nextCoin+i*30;items.push({k:'c',x:xx,y:hAt(xx)+30+Math.sin(i/(n-1)*Math.PI)*22,v})}nextCoin+=(45+rnd()*35)*PXM}
+ while(nextCoin<ahead){const m=distOff+(nextCoin-200)/PXM,v=Math.round(5*(1+Math.floor(m/250))*CM[LV]),n=4+Math.floor(rnd()*3);if(nextCoin<padCut)for(let i=0;i<n;i++){const xx=nextCoin+i*30;items.push({k:'c',x:xx,y:hAt(xx)+30+Math.sin(i/(n-1)*Math.PI)*22,v})}nextCoin+=(45+rnd()*35)*PXM}
  items=items.filter(o=>!o.got&&o.x>car.x-900)}
 // ---------- physics ----------
 const G=900;let GR=900;
@@ -298,7 +298,7 @@ function showOver(){document.body.classList.remove('playing');PT.clear();kg=kb=0
  const fill=d=>{const g=tabs(d,a=>table(a,r=>d.ok&&r.name===pname&&r.score===m));tb.replaceWith(g);tb=g};const fail=()=>{lb.textContent='Offline - leaderboard unavailable. Your best: '+fmt(sv.best)+' m'};
  if(!API)return;if(runId&&m>0)fetch(API+'/score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({game:'hc',name:pname,score:m,run:runId})}).then(r=>r.json()).then(d=>{if(!d.top)return fetch(API+'/top?game=hc').then(r=>r.json()).then(t=>{fill(t);lb.textContent='🌎 Global leaderboard · '+(d.error||'')});fill(d);lb.textContent='🌎 Global leaderboard'+(d.ok?' · you are #'+d.rank:'')}).catch(fail);
  else fetch(API+'/top?game=hc').then(r=>r.json()).then(d=>{fill(d);lb.textContent='🌎 Global leaderboard'}).catch(fail);runId=null}
-window.__mc={get lv(){return LV},get ph(){return ph},get airT(){return airT},setX:v=>{car.x=v;car.a=0;car.w=0;car.vx=car.vy=0;for(const w of wh){w.x=v+w.sg*V.ax;w.y=hAt(w.x)+V.r+2;w.vx=w.vy=0;w.sp=0}car.y=Math.max(wh[0].y,wh[1].y)+30},setBatt:v=>batt=v,get res(){return res},get segs(){return segs},get coals(){return items.filter(o=>o.k==="coal").map(o=>[Math.round(o.x),o.got|0])},get coins(){return coinsRun},get gas(){return gas},get brk(){return brk},dbg:()=>[Math.round(car.vx),+car.a.toFixed(2),wh.map(w=>[w.on,+w.sp.toFixed(1)]),+slope(car.x).toFixed(2)],get st(){return st},get batt(){return batt},get dist(){return dist}};
+window.__mc={get lv(){return LV},get ph(){return ph},get airT(){return airT},setX:v=>{car.x=v;car.a=0;car.w=0;car.vx=car.vy=0;for(const w of wh){w.x=v+w.sg*V.ax;w.y=hAt(w.x)+V.r+2;w.vx=w.vy=0;w.sp=0}car.y=Math.max(wh[0].y,wh[1].y)+30},setBatt:v=>batt=v,get res(){return res},get segs(){return segs},get cv(){return [...new Set(items.filter(o=>o.k==="c").map(o=>o.v))]},get coals(){return items.filter(o=>o.k==="coal").map(o=>[Math.round(o.x),o.got|0])},get coins(){return coinsRun},get gas(){return gas},get brk(){return brk},dbg:()=>[Math.round(car.vx),+car.a.toFixed(2),wh.map(w=>[w.on,+w.sp.toFixed(1)]),+slope(car.x).toFixed(2)],get st(){return st},get batt(){return batt},get dist(){return dist}};
 reset();showMenu();requestAnimationFrame(loop);
 })();
 </script><script>if("serviceWorker"in navigator){var hadC=!!navigator.serviceWorker.controller,rl=0;navigator.serviceWorker.addEventListener("controllerchange",function(){if(hadC&&!rl){rl=1;location.reload()}});addEventListener("load",function(){navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).then(function(r){r.update()})})}</script></body></html>
