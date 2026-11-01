@@ -36,6 +36,7 @@ function rideTread(k){return k==='cyber'?1+.13*UL(k,'tir'):0}
 function rideR(k){return k==='cyber'?VEH[k].r0+UL(k,'tir'):VEH[k].r0}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(sv))}catch(e){}};
 let pname=clean(localStorage.getItem('moundClimbName')||localStorage.getItem('moundHopperName')||'');
+let VK='phone';const cagePrice=k=>k==='phone'?2500:Math.round(VEH[k].price*1.25),hasCage=k=>!!(sv.cage&&sv.cage[k]),maxed=k=>{const u=UPV(k);return u.spd>=MAXL&&u.sus>=MAXL&&u.tir>=MAXL};let cageCd=0;
 const UPC=[400,1200,3000,7500,18000,40000],MAXL=6,CYBER=250000;
 const UPN={spd:['⚡ Speed','Engine power & top speed'],sus:['🛞 Suspension','Smoother landings, less flipping'],tir:['🧲 Tires','More grip on steep hills']};
 const VEH={phone:{name:'Cell Phone',w:84,h:34,r:15,ax:30,ay:-21,cap:100,eng:1,spin:20,M:4,grip:0,sus:1,price:0},
@@ -67,7 +68,7 @@ function hAt(xx){if(LV===5&&!ph&&xx>PADX-260){if(padY==null)padY=base(PADX-260);
 function slope(xx){return(hAt(xx+1)-hAt(xx-1))/2}
 // ---------- state ----------
 let st='menu',car,V,wh,items,camx=0,camy=0,t=0,gas=0,brk=0,batt,dist,coinsRun,deadT=0,lowT=0,upT=0,why='',runId=null,nextBolt,nextCoin,nextMound,nextItemX,res=0,segs=0,nextCoal=0;
-function reset(){LV=sv.lvOwn[sv.lv]?sv.lv:1;ph=0;padY=null;distOff=0;GR=900;airT=0;airB=0;pops=[];ship=LV===5?{y:0,v:0}:null;seedR=(Date.now()%2147483646)+1;pts=[0];pts.sl=0;mounds=[];V=VEH[sv.own[sv.sel]?sv.sel:'phone'];const u=UPV(sv.own[sv.sel]?sv.sel:'phone');{const kk=sv.own[sv.sel]?sv.sel:'phone';V.r=rideR(kk);V.tread=rideTread(kk);V.ay=rideAy(kk);V.trav=rideTrav(kk)}
+function reset(){LV=sv.lvOwn[sv.lv]?sv.lv:1;ph=0;padY=null;distOff=0;GR=900;airT=0;airB=0;pops=[];ship=LV===5?{y:0,v:0}:null;seedR=(Date.now()%2147483646)+1;pts=[0];pts.sl=0;mounds=[];V=VEH[sv.own[sv.sel]?sv.sel:'phone'];const u=UPV(sv.own[sv.sel]?sv.sel:'phone');{const kk=sv.own[sv.sel]?sv.sel:'phone';VK=kk;V.r=rideR(kk);V.tread=rideTread(kk);V.ay=rideAy(kk);V.trav=rideTrav(kk)}
  V.k=260*(1+.14*u.sus)*V.sus;V.c=13*(1+.22*u.sus)*V.sus;V.mu=.85+.17*u.tir+V.grip;V.tq=26000*V.eng*(1+.16*u.spd);V.ms=V.spin*(1+.1*u.spd)*V.eng*V.r0/V.r;
  const y0=40;car={x:200,y:y0+V.r+30,vx:0,vy:0,a:0,w:0};wh=[-1,1].map(sg=>({x:200+sg*V.ax,y:y0+V.r,vx:0,vy:0,sp:0,th:0,on:0,sg}));
  items=[];res=0;segs=0;nextCoal=200+1000*PXM;batt=V.cap;dist=0;coinsRun=0;deadT=0;lowT=0;upT=0;why='';nextBolt=24*PXM;nextCoin=12*PXM;nextMound=180*PXM;nextItemX=0;camx=car.x;camy=car.y;}
@@ -108,10 +109,10 @@ function step(dt){const M=V.M,I=M*(V.w*V.w+V.h*V.h)/12,c=Math.cos(car.a),s=Math.
  const hw=V.w/2,hh=V.h/2,cc=Math.cos(car.a),ss=Math.sin(car.a);
  for(const [lx,ly,top] of [[-hw,-hh,0],[hw,-hh,0],[-hw,hh,1],[hw,hh,1],[0,hh+2,1],[-hw,0,0],[hw,0,0]]){const wx=car.x+cc*lx-ss*ly,wy=car.y+ss*lx+cc*ly,g=hAt(wx);
   if(LV===4){const cl=ceilAt(wx);if(wy>cl){car.y-=wy-cl;const vq=car.vy+car.w*(wx-car.x);if(vq>0){car.vy-=vq*.9;car.w*=.7}}}
-  if(wy<g){bt=1;if(top&&st==='play'){crash('Smashed it!');return}const pen=g-wy;car.y+=pen;const rx=wx-car.x,ry=wy-car.y;const vpy=car.vy+car.w*rx;if(vpy<0){car.vy-=vpy*.8;car.w*=.7}car.vx*=1-1.5*dt}}
+  if(wy<g){bt=1;if(top&&st==='play'){if(!hasCage(VK)){crash('Smashed it!');return}if(t-cageCd>1.5){cageCd=t;pop('🛡️ Roll cage!','#9fe8ff')}}const pen=g-wy;car.y+=pen;const rx=wx-car.x,ry=wy-car.y;const vpy=car.vy+car.w*rx;if(vpy<0){car.vy-=vpy*.8;car.w*=.7}car.vx*=1-1.5*dt}}
  if(st==='play'){const gnd=anyOn||bt;if(!gnd){airT+=dt;airB+=20*dt}else{if(airT>.35&&airB>=1){const a=Math.floor(airB);coinsRun+=a;pop('+₿ '+a+' Airtime!')}airT=0;airB=0}
   const sp=Math.hypot(car.vx,car.vy);{const dr=(1+2.4*Math.max(thr,(batt>0||res>0)?br:0))*dt;if(batt>0)batt-=dr;else res=Math.max(0,res-dr)}if(batt<=0){batt=0;if(res<=0){over('Battery dead!');return}}
-  if(Math.cos(car.a)<-.2){upT+=dt;if(upT>2.5)crash('Flipped over!')}else upT=0;
+  if(Math.cos(car.a)<-.2){upT+=dt;if(upT>2.5){if(hasCage(VK)){upT=0;car.a=0;car.w=0;car.vx*=.3;car.vy=0;car.y+=60;for(const w of wh){w.y=car.y-30;w.x=car.x+w.sg*V.ax;w.vx=car.vx;w.vy=0}pop('🛡️ Roll cage flipped you back!','#9fe8ff')}else crash('Flipped over!')}}else upT=0;
   dist=Math.max(dist,distOff+(car.x-200)/PXM);if(LV===5&&!ph&&car.x>PADX-70){launch();return}
   for(const o of items)if(!o.got){const r=o.k==='b'||o.k==='coal'?34:26;if(Math.hypot(o.x-car.x,o.y-car.y)<r+V.h/2||wh.some(w=>Math.hypot(o.x-w.x,o.y-w.y)<V.r+14)){o.got=1;o.ft=t;if(o.k==='b')batt=V.cap;else if(o.k==='coal'){coinsRun+=1000;segs++;res+=V.cap*.25;pop('🪨 Coal! +₿1,000 · +25% reserve','#c9a0ff')}else{coinsRun+=o.v}}}}
 }
@@ -233,9 +234,10 @@ function body(kind,black,face){const v=VEH[kind];if(kind!=='phone'&&kind!=='cybe
  x.strokeStyle='#8a9097';x.lineWidth=1.5;x.stroke();x.fillStyle='#1b2028';x.beginPath();x.moveTo(-30,-8);x.lineTo(-6,-21);x.lineTo(34,-11);x.lineTo(30,-6);x.lineTo(-26,-5);x.closePath();x.fill();
  x.strokeStyle='#9aa0a7';x.beginPath();x.moveTo(-8,-6);x.lineTo(-8,10);x.moveTo(-62,2);x.lineTo(62,2);x.stroke();x.fillStyle='#fff';x.fillRect(56,-10,7,3);x.fillStyle='#e33';x.fillRect(-63,-5,3,7);x.fillStyle='#2a2f36';x.fillRect(-62,10,124,3);
  x.fillStyle='#fff';x.globalAlpha=.9;x.fillRect(-4,-16,4,4);x.globalAlpha=1}
+function cageDraw(k){const v=VEH[k],w=v.w*.78,top=-v.h/2-(k==='phone'?10:14),b=-v.h/2+4;x.save();x.strokeStyle='#e6edf5';x.lineWidth=3.2;x.lineJoin='round';x.beginPath();x.moveTo(-w/2,b);x.lineTo(-w/2+8,top);x.lineTo(w/2-8,top);x.lineTo(w/2,b);x.moveTo(-w/6,b);x.lineTo(-w/6+3,top);x.moveTo(w/6,b);x.lineTo(w/6-3,top);x.moveTo(-w/2+4,(b+top)/2);x.lineTo(w/2-4,(b+top)/2);x.stroke();x.strokeStyle='#4a5566';x.lineWidth=1.2;x.stroke();x.restore()}
 function drawCar(){if(st==='launch')return;for(const w of wh){const A=anchor(w.sg);x.strokeStyle='#555';x.lineWidth=5*S;x.beginPath();x.moveTo(sx(A.x),sy(A.y));x.lineTo(sx(w.x),sy(w.y));x.stroke()}
  if(st==='launch')return;for(const w of wh)wheel(sx(w.x),sy(w.y),V.r*S,w.th,sv.sel==='cyber',V.tread);
- x.save();x.translate(sx(car.x),sy(car.y));x.scale(S,S);x.rotate(-car.a);body(V===VEH[sv.sel]?sv.sel:'phone',0,st==='dead'&&why!=='Battery dead!'?'dead':'');x.restore()}
+ x.save();x.translate(sx(car.x),sy(car.y));x.scale(S,S);x.rotate(-car.a);body(V===VEH[sv.sel]?sv.sel:'phone',0,st==='dead'&&why!=='Battery dead!'?'dead':'');if(hasCage(VK))cageDraw(VK);x.restore()}
 function hud(){const bw=Math.min(190,W*.42),bh=26,X=W/2-bw/2,Y=Math.max(10,12);const f=batt/V.cap;
  x.fillStyle='#1d2b4acc';rr(X-6,Y-5,bw+22,bh+10,10);x.fill();x.fillStyle='#fff';x.fillRect(X+bw,Y+7,6,12);x.strokeStyle='#fff';x.lineWidth=2.5;rr(X,Y,bw,bh,6);x.stroke();
  x.fillStyle=f>.5?'#43d15a':f>.22?'#ffd54a':(Math.sin(t*12)>0?'#ff4a4a':'#a22');rr(X+3,Y+3,Math.max(0,(bw-6)*f),bh-6,4);x.fill();
@@ -264,7 +266,10 @@ function loop(n){let d=(n-last)/1000;last=n;if(d>.05)d=.05;t+=d;
 // ---------- UI ----------
 function preview(kind,locked){const c=document.createElement('canvas'),w=150,h=78;c.width=w*2;c.height=h*2;c.style.width=w+'px';c.style.height=h+'px';const g=c.getContext('2d'),sv0=x;x=g;g.setTransform(2,0,0,2,0,0);const v=Object.assign({},VEH[kind],{r:rideR(kind),tread:rideTread(kind)}),sc=Math.min(1.15,118/v.w);g.translate(w/2,h/2);g.scale(sc,sc);{const lf=Math.max(0,rideR(kind)-rideAy(kind)-VEH[kind].r0+VEH[kind].ay0),f=1/(1+lf/45);g.scale(f,f);g.translate(0,-lf*.5)}
  const ay=rideAy(kind);for(const sg of [-1,1]){g.strokeStyle=locked?'#000':'#555';g.lineWidth=4;g.beginPath();g.moveTo(sg*v.ax,0);g.lineTo(sg*v.ax,-ay+2);g.stroke();if(locked){g.fillStyle='#000';g.beginPath();g.arc(sg*v.ax,-ay+2,v.r,0,7);g.fill()}else wheel(sg*v.ax,-ay+2,v.r,0,kind==='cyber',v.tread)}
- body(kind,locked,'');x=sv0;return c}
+ body(kind,locked,'');if(!locked&&hasCage(kind))cageDraw(kind);x=sv0;return c}
+function cageRow(){const k=sv.sel;if(!sv.own[k])return [];const row=el('div',null,'up'),info=el('div',null,'ui');const ok=maxed(k),own=hasCage(k),pr=cagePrice(k);
+ info.append(el('b',ok||own?'🛡️ Roll Cage':'🔒 Roll Cage'),el('span',own?'Installed · head hits & flips won\'t end your run':ok?'Protects you from head hits & flips':'Max out Speed, Suspension & Tires to unlock','sm'));
+ const b=el('button',own?'OWNED':ok?'₿ '+fmt(pr):'LOCKED','ub');b.disabled=own||!ok||sv.btc<pr;b.onclick=()=>{if(!maxed(k)||sv.btc<pr||hasCage(k))return;sv.btc-=pr;sv.cage=sv.cage||{};sv.cage[k]=1;save();showMenu()};row.append(info,b);return [row]}
 function upgradeRow(k){const L=UPV(sv.sel)[k],row=el('div',null,'up'),info=el('div',null,'ui');info.append(el('b',UPN[k][0]),el('span',UPN[k][1],'sm'));const pip=el('div',null,'pips');for(let i=0;i<MAXL;i++)pip.append(el('i',null,i<L?'on':''));info.append(pip);
  const b=el('button',L>=MAXL?'MAX':'₿ '+fmt(UPC[L]),'ub');b.disabled=L>=MAXL||sv.btc<UPC[L];b.onclick=()=>{if(sv.btc<UPC[L])return;sv.btc-=UPC[L];UPV(sv.sel)[k]++;save();showMenu()};row.append(info,b);return row}
 const LV2=10000;
@@ -285,7 +290,7 @@ function showMenu(){st='menu';reset();ov.classList.remove('hide');document.body.
  const ls=el('div',null,'vs g2');for(const [k,nm,pr,note] of LVS){const own=sv.lvOwn[k],card=el('div',null,'vc lv'+(sv.lv===k?' sel':'')+(own?'':' lock'));card.append(lvPrev(k,!own),el('b',own?nm:'🔒 '+nm));
   if(own){card.append(el('span',(sv.lv===k?'✔ Selected':'Tap to play')+((sv[bkey(k)]||0)>0?' · Best '+fmt(sv[bkey(k)])+' m':''),'sm'));card.onclick=()=>{sv.lv=k;save();showMenu()}}
   else{const b=el('button','₿ '+fmt(pr),'ub');b.disabled=sv.btc<pr;b.onclick=e=>{e.stopPropagation();if(sv.btc<pr)return;sv.btc-=pr;sv.lvOwn[k]=1;sv.lv=k;save();showMenu()};card.append(el('span','Level '+k+' · '+note,'sm'),b)}ls.append(card)}
- bx.replaceChildren(el('h2','Mound Climb'),el('p','Garage · Best: '+fmt(Math.max(...LVS.map(l=>sv[bkey(l[0])]||0)))+' m','sm'),el('p','₿ '+fmt(sv.btc),'btc'),i,el('p','Level','hd'),ls,el('p','Vehicle','hd'),vs,el('p','Upgrades · '+VEH[sv.sel].name,'hd'),upgradeRow('spd'),upgradeRow('sus'),upgradeRow('tir'),go);
+ bx.replaceChildren(el('h2','Mound Climb'),el('p','Garage · Best: '+fmt(Math.max(...LVS.map(l=>sv[bkey(l[0])]||0)))+' m','sm'),el('p','₿ '+fmt(sv.btc),'btc'),i,el('p','Level','hd'),ls,el('p','Vehicle','hd'),vs,el('p','Upgrades · '+VEH[sv.sel].name,'hd'),upgradeRow('spd'),upgradeRow('sus'),upgradeRow('tir'),...cageRow(),go);
  const start=()=>{const n=clean(i.value);if(!n){i.focus();i.placeholder='Enter your name first';return}pname=n;try{localStorage.setItem('moundClimbName',n)}catch(_){}i.blur();ov.classList.add('hide');document.body.classList.add('playing');reset();st='play';startRun()};
  go.onclick=start;i.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter')start()}}
 function startRun(){runId=null;if(!API)return;fetch(API+'/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({game:'hc'})}).then(r=>r.json()).then(d=>{runId=d.run||null}).catch(()=>{})}
@@ -298,7 +303,7 @@ function showOver(){document.body.classList.remove('playing');PT.clear();kg=kb=0
  const fill=d=>{const g=tabs(d,a=>table(a,r=>d.ok&&r.name===pname&&r.score===m));tb.replaceWith(g);tb=g};const fail=()=>{lb.textContent='Offline - leaderboard unavailable. Your best: '+fmt(sv.best)+' m'};
  if(!API)return;if(runId&&m>0)fetch(API+'/score',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({game:'hc',name:pname,score:m,run:runId})}).then(r=>r.json()).then(d=>{if(!d.top)return fetch(API+'/top?game=hc').then(r=>r.json()).then(t=>{fill(t);lb.textContent='🌎 Global leaderboard · '+(d.error||'')});fill(d);lb.textContent='🌎 Global leaderboard'+(d.ok?' · you are #'+d.rank:'')}).catch(fail);
  else fetch(API+'/top?game=hc').then(r=>r.json()).then(d=>{fill(d);lb.textContent='🌎 Global leaderboard'}).catch(fail);runId=null}
-window.__mc={get lv(){return LV},get ph(){return ph},get airT(){return airT},setX:v=>{car.x=v;car.a=0;car.w=0;car.vx=car.vy=0;for(const w of wh){w.x=v+w.sg*V.ax;w.y=hAt(w.x)+V.r+2;w.vx=w.vy=0;w.sp=0}car.y=Math.max(wh[0].y,wh[1].y)+30},setBatt:v=>batt=v,get res(){return res},get segs(){return segs},get cv(){return [...new Set(items.filter(o=>o.k==="c").map(o=>o.v))]},get coals(){return items.filter(o=>o.k==="coal").map(o=>[Math.round(o.x),o.got|0])},get coins(){return coinsRun},get gas(){return gas},get brk(){return brk},dbg:()=>[Math.round(car.vx),+car.a.toFixed(2),wh.map(w=>[w.on,+w.sp.toFixed(1)]),+slope(car.x).toFixed(2)],get st(){return st},get batt(){return batt},get dist(){return dist}};
+window.__mc={get lv(){return LV},get ph(){return ph},get airT(){return airT},setX:v=>{car.x=v;car.a=0;car.w=0;car.vx=car.vy=0;for(const w of wh){w.x=v+w.sg*V.ax;w.y=hAt(w.x)+V.r+2;w.vx=w.vy=0;w.sp=0}car.y=Math.max(wh[0].y,wh[1].y)+30},setBatt:v=>batt=v,flip:()=>{car.a=Math.PI;car.y+=50},get res(){return res},get segs(){return segs},get cv(){return [...new Set(items.filter(o=>o.k==="c").map(o=>o.v))]},get coals(){return items.filter(o=>o.k==="coal").map(o=>[Math.round(o.x),o.got|0])},get coins(){return coinsRun},get gas(){return gas},get brk(){return brk},dbg:()=>[Math.round(car.vx),+car.a.toFixed(2),wh.map(w=>[w.on,+w.sp.toFixed(1)]),+slope(car.x).toFixed(2)],get st(){return st},get batt(){return batt},get dist(){return dist}};
 reset();showMenu();requestAnimationFrame(loop);
 })();
 </script><script>if("serviceWorker"in navigator){var hadC=!!navigator.serviceWorker.controller,rl=0;navigator.serviceWorker.addEventListener("controllerchange",function(){if(hadC&&!rl){rl=1;location.reload()}});addEventListener("load",function(){navigator.serviceWorker.register("/sw.js",{updateViaCache:"none"}).then(function(r){r.update()})})}</script></body></html>
